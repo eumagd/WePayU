@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+<<<<<<< HEAD
 public class Facade{
 
     private SistemaFolha sistema = new SistemaFolha();
@@ -20,3 +21,8 @@ public class Facade{
         return sistema.adicionarEmpregado(nome, endereco, tipo, salario);
     }
 }
+=======
+public class Facade {
+
+}
+>>>>>>> 2e3c64a39bbd7fd46be321b76937fd9ecf985faf
