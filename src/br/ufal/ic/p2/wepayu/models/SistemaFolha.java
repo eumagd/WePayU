@@ -5,11 +5,9 @@
 */
 package br.ufal.ic.p2.wepayu.models;
 
+import br.ufal.ic.p2.wepayu.Exception.*;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoExisteException;
 
 public class SistemaFolha {
     private final ArrayList<Empregado> empregados = new ArrayList<>();
@@ -24,19 +22,33 @@ public class SistemaFolha {
         throw new EmpregadoNaoExisteException();
     }
 
-    public String adicionarEmpregado(String nome, String endereco, String tipo, String salarioStr) throws Exception {
-        if (nome == null || nome.isEmpty()) throw new Exception("Nome nao pode ser nulo.");
-        if (endereco == null || endereco.isEmpty()) throw new Exception("Endereco nao pode ser nulo.");
-        if (salarioStr == null || salarioStr.isEmpty()) throw new Exception("Salario nao pode ser nulo.");
-
-        double salario;
-        try {
-            salario = Double.parseDouble(salarioStr.replace(",","."));
-        } catch (NumberFormatException e) {
-            throw new Exception("Salario deve ser numerico.");
+    private void validarDados(String nome, String endereco, String salarioStr) throws NomeNuloException, EnderecoNuloException, SalarioNuloException{
+        if(nome == null || nome.isEmpty()){
+            throw new NomeNuloException();
         }
+        if(endereco == null || endereco.isEmpty()){
+            throw new EnderecoNuloException();
+        }
+        if(salarioStr == null || salarioStr.isEmpty()){
+            throw new SalarioNuloException();
+        }
+    }
 
-        if (salario < 0) throw new Exception("Salario deve ser nao-negativo.");
+    public double converterSalario(String salarioStr) throws SalarioNaoNegativoException, SalarioNaoNumericoException{
+        try{
+            double salario = Double.parseDouble(salarioStr.replace(",","."));
+
+            if(salario < 0) throw new SalarioNaoNegativoException();
+            return salario;
+        }
+        catch(NumberFormatException e){
+            throw new SalarioNaoNumericoException();
+        }
+    }
+
+    public String adicionarEmpregado(String nome, String endereco, String tipo, String salarioStr) throws Exception{
+        validarDados(nome, endereco, salarioStr);
+        double salario = converterSalario(salarioStr);
 
         Empregado novoEmpregado;
         if(tipo.equals("horista")){
@@ -46,10 +58,10 @@ public class SistemaFolha {
             novoEmpregado = new EmpregadoAssalariado(nome, endereco, tipo, salario);
         }
         else if(tipo.equals("comissionado")){
-            throw new Exception("Tipo nao aplicavel.");
+            throw new TipoNaoAplicavelException();
         }
         else{
-            throw new Exception("Tipo invalido.");
+            throw new TipoInvalidoException();
         }
 
         String novoId = String.valueOf(contId++);
@@ -59,30 +71,22 @@ public class SistemaFolha {
     }
 
     public String adicionarEmpregado(String nome, String endereco, String tipo, String salarioStr, String comissaoStr) throws Exception{
-        if (nome == null || nome.isEmpty()) throw new Exception("Nome nao pode ser nulo.");
-        if (endereco == null || endereco.isEmpty()) throw new Exception("Endereco nao pode ser nulo.");
-        if (salarioStr == null || salarioStr.isEmpty()) throw new Exception("Salario nao pode ser nulo.");
-        if (comissaoStr == null || comissaoStr.isEmpty()) throw new Exception("Comissao nao pode ser nula.");
+        validarDados(nome, endereco, salarioStr);
+        double salario = converterSalario(salarioStr);
 
+        if (comissaoStr == null || comissaoStr.isEmpty()) throw new ComissaoNulaException();
         if(tipo.equals("horista") || tipo.equals("assalariado")){
-            throw new Exception("Tipo nao aplicavel.");
+            throw new TipoNaoAplicavelException();
         }
-
-        double salario;
-        try {
-            salario = Double.parseDouble(salarioStr.replace(",","."));
-        } catch (NumberFormatException e) {
-            throw new Exception("Salario deve ser nao-negativo.");
-        }
-        if (salario < 0) throw new Exception("Salario deve ser nao-negativo.");
 
         float comissao;
         try {
             comissao = Float.parseFloat(comissaoStr.replace(",","."));
-        } catch (NumberFormatException e) {
-            throw new Exception("Comissao deve ser numerica.");
         }
-        if (comissao < 0) throw new Exception("Comissao deve ser nao-negativa.");
+        catch(NumberFormatException e){
+            throw new ComissaoNaoNumericaException();
+        }
+        if (comissao < 0) throw new ComissaoNaoNegativaException();
 
         Empregado novoEmpregado = new EmpregadoComissionado(nome, endereco, tipo, salario, comissao);
 
@@ -93,9 +97,9 @@ public class SistemaFolha {
         return novoId;
     }
 
-    public String getAtributoEmpregado(String id, String atributo) throws Exception{
+    public String getAtributoEmpregado(String id, String atributo) throws Exception {
         if(id == null || id.isEmpty()){
-            throw new Exception("Identificacao do empregado nao pode ser nula.");
+            throw new IdentificacaoNulaException();
         }
 
         Empregado emp = buscarEmpregado(id);
@@ -107,18 +111,13 @@ public class SistemaFolha {
             case "tipo":
                 return emp.getTipo();
             case "salario":
-                String salarioFormatado = String.format("%.2f", emp.getSalario()).replace(".",",");
-                return salarioFormatado;
+                return String.format("%.2f", emp.getSalario()).replace(".",",");
             case "comissao":
-                if(emp instanceof EmpregadoComissionado){
-                    float comissao = ((EmpregadoComissionado) emp).getComissao();
-                    return String.format("%.2f", comissao).replace(".",",");
-                }
-                throw new Exception("Empregado não é comissionado.");
+                return String.format("%.2f", emp.getComissao()).replace(".",",");
             case "sindicalizado":
                 return "false";
             default:
-                throw new Exception("Atributo nao existe.");
+                throw new AtributoNaoExisteException();
         }
     }
 }

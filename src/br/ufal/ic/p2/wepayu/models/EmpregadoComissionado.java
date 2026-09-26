@@ -1,18 +1,19 @@
 package br.ufal.ic.p2.wepayu.models;
 
 public class EmpregadoComissionado extends Empregado{
-    private float comissao;
+    private double comissao;
 
-    public EmpregadoComissionado(String nome, String endereco, String tipo, double salario, float comissao){
+    public EmpregadoComissionado(String nome, String endereco, String tipo, double salario, double comissao){
         super(nome, endereco, tipo, salario);
         this.comissao = comissao;
     }
 
-    public void setComissao(float comissao){
+    public void setComissao(double comissao){
         this.comissao = comissao;
     }
 
-    public float getComissao(){
-        return comissao;
+    @Override
+    public double getComissao(){
+        return this.comissao;
     }
 }

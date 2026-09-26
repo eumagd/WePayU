@@ -1,6 +1,6 @@
 package br.ufal.ic.p2.wepayu.models;
 
-import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoExisteException;
+import br.ufal.ic.p2.wepayu.Exception.*;
 
 public class Empregado {
     private String id;
@@ -52,7 +52,11 @@ public class Empregado {
         this.tipo = tipo;
     }
 
-    public void setSalario(Double salario){
+    public void setSalario(double salario){
         this.salario = salario;
+    }
+
+    public double getComissao() throws EmpregadoNaoComissionadoException{
+        throw new EmpregadoNaoComissionadoException();
     }
 }
