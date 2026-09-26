@@ -6,7 +6,6 @@
 package br.ufal.ic.p2.wepayu.models;
 
 import br.ufal.ic.p2.wepayu.Exception.*;
-
 import java.util.ArrayList;
 
 public class SistemaFolha {
@@ -22,13 +21,19 @@ public class SistemaFolha {
         throw new EmpregadoNaoExisteException();
     }
 
-    private void validarDados(String nome, String endereco, String salarioStr) throws NomeNuloException, EnderecoNuloException, SalarioNuloException{
+    private void validarNome(String nome) throws NomeNuloException{
         if(nome == null || nome.isEmpty()){
             throw new NomeNuloException();
         }
+    }
+
+    private void validarEndereco(String endereco) throws EnderecoNuloException{
         if(endereco == null || endereco.isEmpty()){
             throw new EnderecoNuloException();
         }
+    }
+
+    private void validarSalario(String salarioStr) throws SalarioNuloException{
         if(salarioStr == null || salarioStr.isEmpty()){
             throw new SalarioNuloException();
         }
@@ -47,7 +52,9 @@ public class SistemaFolha {
     }
 
     public String adicionarEmpregado(String nome, String endereco, String tipo, String salarioStr) throws Exception{
-        validarDados(nome, endereco, salarioStr);
+        validarNome(nome);
+        validarEndereco(endereco);
+        validarSalario(salarioStr);
         double salario = converterSalario(salarioStr);
 
         Empregado novoEmpregado;
@@ -71,7 +78,9 @@ public class SistemaFolha {
     }
 
     public String adicionarEmpregado(String nome, String endereco, String tipo, String salarioStr, String comissaoStr) throws Exception{
-        validarDados(nome, endereco, salarioStr);
+        validarNome(nome);
+        validarEndereco(endereco);
+        validarSalario(salarioStr);
         double salario = converterSalario(salarioStr);
 
         if (comissaoStr == null || comissaoStr.isEmpty()) throw new ComissaoNulaException();
@@ -119,5 +128,22 @@ public class SistemaFolha {
             default:
                 throw new AtributoNaoExisteException();
         }
+    }
+
+    public String getEmpregadoPorNome(String nome, int indice) throws Exception{
+        validarNome(nome);
+
+        int aux = 0;
+        for (int i = 0, empregadosSize = empregados.size(); i < empregadosSize; i++) {
+            Empregado e = empregados.get(i);
+            if (e.getNome().contains(nome)) {
+                aux++;
+                if (aux == indice) {
+                    return e.getId();
+                }
+            }
+        }
+
+        throw new NomeEmpregadoNaoExisteException();
     }
 }
