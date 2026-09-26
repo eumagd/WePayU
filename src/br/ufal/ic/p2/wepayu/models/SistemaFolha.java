@@ -21,6 +21,12 @@ public class SistemaFolha {
         throw new EmpregadoNaoExisteException();
     }
 
+    private void validarId(String id) throws IdentificacaoNulaException{
+        if(id == null || id.isEmpty()){
+            throw new IdentificacaoNulaException();
+        }
+    }
+
     private void validarNome(String nome) throws NomeNuloException{
         if(nome == null || nome.isEmpty()){
             throw new NomeNuloException();
@@ -145,5 +151,12 @@ public class SistemaFolha {
         }
 
         throw new NomeEmpregadoNaoExisteException();
+    }
+
+    public void removerEmpregado(String id) throws Exception{
+        validarId(id);
+
+        Empregado emp = buscarEmpregado(id);
+        empregados.remove(emp);
     }
 }

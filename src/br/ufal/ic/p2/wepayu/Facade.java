@@ -26,5 +26,9 @@ public class Facade{
         return sistema.getEmpregadoPorNome(nome, indice);
     }
 
+    public void removerEmpregado(String id) throws Exception{
+        sistema.removerEmpregado(id);
+    }
+
     public void encerrarSistema(){}
 }
