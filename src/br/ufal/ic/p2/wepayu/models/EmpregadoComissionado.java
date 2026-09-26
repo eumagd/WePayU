@@ -1,30 +1,18 @@
 package br.ufal.ic.p2.wepayu.models;
 
-import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoExisteException;
-
 public class EmpregadoComissionado extends Empregado{
-    private double salarioMensal;
-    private float taxaDeComissao;
+    private float comissao;
 
-    public EmpregadoComissionado(String nome, String endereco, String tipo, double salario, double salarioMensal, float taxaDeComissao) throws EmpregadoNaoExisteException {
+    public EmpregadoComissionado(String nome, String endereco, String tipo, double salario, float comissao){
         super(nome, endereco, tipo, salario);
-        this.salarioMensal = salarioMensal;
-        this.taxaDeComissao = taxaDeComissao;
+        this.comissao = comissao;
     }
 
-    public void setSalarioMensal(double salarioMensal){
-        this.salarioMensal = salarioMensal;
+    public void setComissao(float comissao){
+        this.comissao = comissao;
     }
 
-    public double getSalarioMensal(){
-        return salarioMensal;
-    }
-
-    public void setTaxaDeComissao(float taxaDeComissao){
-        this.taxaDeComissao = taxaDeComissao;
-    }
-
-    public float getTaxaDeComissao(){
-        return taxaDeComissao;
+    public float getComissao(){
+        return comissao;
     }
 }
