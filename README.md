@@ -4,7 +4,11 @@ Projeto da disciplina: sistema de informação para administrar o pagamento de e
 
 ## Status
 
-🚧 Em desenvolvimento — projeto recém-iniciado, ainda sem código implementado.
+Em desenvolvimento — código sendo implementado.
+
+## Ambiente utilizado
+
+Inicialmente VS Code (Microsoft) com posterior alteração para o IntelliJ (JetBrains).
 
 ## Sobre o sistema
 
@@ -22,8 +26,8 @@ A folha é rodada diariamente, pagando os empregados cujo salário vence naquele
 
 ## Milestone 1 — User Stories 1 a 8
 
-- [ ] US1 — Adição de um empregado
-- [ ] US2 — Remoção de um empregado
+- [X] US1 — Adição de um empregado
+- [X] US2 — Remoção de um empregado
 - [ ] US3 — Lançar um cartão de ponto
 - [ ] US4 — Lançar um resultado de venda
 - [ ] US5 — Lançar uma taxa de serviço
@@ -74,8 +78,8 @@ Glossário completo no documento de especificação (`Sistema_de_Folha_de_Pagame
 
 ## Como rodar os testes
 
-_A definir assim que a Façade e os testes de aceitação (`us1.txt`, `us2.txt`, ...) forem configurados no projeto._
+Na classe Main.java se retira o indicador de comentário (//) do respectivo teste que se quer verificar e roda o respectivo arquivo.
 
 ## Referência
 
-Especificação completa do projeto: `Sistema_de_Folha_de_Pagamento__WePayU_.pdf`
+Especificação completa do projeto: `Sistema_de_Folha_de_Pagamento__WePayU_.pdf` (disponibilizado no Classroom da disciplina).
