@@ -127,6 +127,18 @@ public class SistemaFolha {
         }
     }
 
+    private void validarValorVenda(String valorVenda) throws ValorVendaNaoPositivoException{
+        double valor = Double.parseDouble(valorVenda.replace(",","."));
+
+        if(valor <= 0){
+            throw new ValorVendaNaoPositivoException();
+        }
+    }
+
+    private double converterValorVenda(String valorVenda){
+        return Double.parseDouble(valorVenda.replace(",","."));
+    }
+
     public int converterDataInt(String data){
         String[] partesData = data.split("/");
         int dia = Integer.parseInt(partesData[0]);
@@ -152,8 +164,8 @@ public class SistemaFolha {
         validarNome(nome);
         validarEndereco(endereco);
         validarSalario(salarioStr);
-        double salario = converterSalario(salarioStr);
 
+        double salario = converterSalario(salarioStr);
         Empregado novoEmpregado;
         if(tipo.equals("horista")){
             novoEmpregado = new EmpregadoHorista(nome, endereco, tipo, salario);
@@ -171,6 +183,7 @@ public class SistemaFolha {
         String novoId = String.valueOf(contId++);
         novoEmpregado.setId(novoId);
         empregados.add(novoEmpregado);
+
         return novoId;
     }
 
@@ -178,8 +191,8 @@ public class SistemaFolha {
         validarNome(nome);
         validarEndereco(endereco);
         validarSalario(salarioStr);
-        double salario = converterSalario(salarioStr);
 
+        double salario = converterSalario(salarioStr);
         if (comissaoStr == null || comissaoStr.isEmpty()) throw new ComissaoNulaException();
         if(tipo.equals("horista") || tipo.equals("assalariado")){
             throw new TipoNaoAplicavelException();
@@ -195,7 +208,6 @@ public class SistemaFolha {
         if (comissao < 0) throw new ComissaoNaoNegativaException();
 
         Empregado novoEmpregado = new EmpregadoComissionado(nome, endereco, tipo, salario, comissao);
-
         String novoId = String.valueOf(contId++);
         novoEmpregado.setId(novoId);
         empregados.add(novoEmpregado);
@@ -244,7 +256,6 @@ public class SistemaFolha {
 
     public void removerEmpregado(String id) throws Exception{
         validarId(id);
-
         Empregado e = buscarEmpregado(id);
         empregados.remove(e);
     }
@@ -261,17 +272,14 @@ public class SistemaFolha {
 
         int diInt = converterDataInt(dataInicial);
         int dfInt = converterDataInt(dataFinal);
-
         if(diInt > dfInt){
             throw new DataInicialPosDataFinalException();
         }
 
         EmpregadoHorista horista = (EmpregadoHorista) emp;
         double horasNormais = 0;
-
         for(CartaoPonto cartao : horista.getCartaoPontoList()){
             int dataCartao = converterDataInt(cartao.getData());
-
             if(dataCartao >= diInt && dataCartao < dfInt){
                 double horasDia = cartao.getHoras();
                 if(horasDia <= 8){
@@ -298,14 +306,12 @@ public class SistemaFolha {
 
         int diInt = converterDataInt(dataInicial);
         int dfInt = converterDataInt(dataFinal);
-
         if(diInt > dfInt){
             throw new DataInicialPosDataFinalException();
         }
 
         EmpregadoHorista horista = (EmpregadoHorista) emp;
         double horasExtras = 0;
-
         for(CartaoPonto cartao : horista.getCartaoPontoList()){
             int dataCartao = converterDataInt(cartao.getData());
 
@@ -331,9 +337,52 @@ public class SistemaFolha {
         }
 
         double horasDouble = converterHoras(horas);
-
         CartaoPonto cartao = new CartaoPonto(data, horasDouble);
         EmpregadoHorista horista = (EmpregadoHorista) emp;
         horista.adicionarCartaoPonto(cartao);
+    }
+
+    public void lancaVenda(String id, String data, String valorVenda) throws Exception{
+        validarId(id);
+        validarData(data);
+        validarValorVenda(valorVenda);
+
+        Empregado emp = buscarEmpregado(id);
+        if(!emp.getTipo().equals("comissionado")){
+            throw new EmpregadoNaoComissionadoException();
+        }
+
+        double novoValor = converterValorVenda(valorVenda);
+        ResultadoVenda novaVenda = new ResultadoVenda(data, novoValor);
+        EmpregadoComissionado comissionado = (EmpregadoComissionado) emp;
+        comissionado.adicionarResultadoVenda(novaVenda);
+    }
+
+    public String getVendasRealizadas(String id, String dataInicial, String dataFinal) throws Exception{
+        validarId(id);
+        validarDataInicial(dataInicial);
+        validarDataFinal(dataFinal);
+
+        Empregado emp = buscarEmpregado(id);
+        if(!emp.getTipo().equals("comissionado")){
+            throw new EmpregadoNaoComissionadoException();
+        }
+
+        int diInt = converterDataInt(dataInicial);
+        int dfInt = converterDataInt(dataFinal);
+        if(diInt > dfInt){
+            throw new DataInicialPosDataFinalException();
+        }
+
+        EmpregadoComissionado comissionado = (EmpregadoComissionado) emp;
+        double vendasTotais = 0;
+        for(ResultadoVenda venda : comissionado.getResultadoVendaList()){
+            int dataVenda = converterDataInt(venda.getData());
+            if(dataVenda >= diInt && dataVenda < dfInt){
+                vendasTotais += venda.getValorVenda();
+            }
+        }
+
+        return String.format("%.2f", vendasTotais).replace(".",",");
     }
 }

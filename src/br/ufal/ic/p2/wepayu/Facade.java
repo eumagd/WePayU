@@ -42,5 +42,13 @@ public class Facade{
         sistema.lancaCartao(id, data, horas);
     }
 
+    public void lancaVenda(String id, String data, String valorVenda) throws Exception{
+        sistema.lancaVenda(id, data, valorVenda);
+    }
+
+    public String getVendasRealizadas(String id, String dataInicial, String dataFinal) throws Exception{
+        return sistema.getVendasRealizadas(id, dataInicial, dataFinal);
+    }
+
     public void encerrarSistema(){}
 }
