@@ -30,5 +30,17 @@ public class Facade{
         sistema.removerEmpregado(id);
     }
 
+    public String getHorasNormaisTrabalhadas(String id, String dataInicial, String dataFinal) throws Exception{
+        return sistema.getHorasNormaisTrabalhadas(id, dataInicial, dataFinal);
+    }
+
+    public String getHorasExtrasTrabalhadas(String id, String dataInicial, String dataFinal) throws Exception{
+        return sistema.getHorasExtrasTrabalhadas(id, dataInicial, dataFinal);
+    }
+
+    public void lancaCartao(String id, String data, String horas) throws Exception{
+        sistema.lancaCartao(id, data, horas);
+    }
+
     public void encerrarSistema(){}
 }

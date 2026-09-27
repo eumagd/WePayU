@@ -1,8 +1,3 @@
-/*
-    CORREÇÕES: a classe foi erroneamente estruturda com atributos de Empregado,
-    sendo que seu propósito é gerenciamento do sistema.
-    Exceções inicialmente tratadas de forma genérica.
-*/
 package br.ufal.ic.p2.wepayu.models;
 
 import br.ufal.ic.p2.wepayu.Exception.*;
@@ -43,6 +38,102 @@ public class SistemaFolha {
         if(salarioStr == null || salarioStr.isEmpty()){
             throw new SalarioNuloException();
         }
+    }
+
+    private void validarData(String data) throws DataInvalidaException{
+        if(data == null || data.isEmpty()){
+            throw new DataInvalidaException();
+        }
+
+        if(!validarFormatoData(data)){
+            throw new DataInvalidaException();
+        }
+    }
+
+    private void validarDataInicial(String dataInicial) throws DataInicialInvalidaException{
+        if(dataInicial == null || dataInicial.isEmpty()){
+            throw new DataInicialInvalidaException();
+        }
+
+        if(!validarFormatoData(dataInicial)){
+            throw new DataInicialInvalidaException();
+        }
+    }
+
+    private void validarDataFinal(String dataFinal) throws DataFinalInvalidaException{
+        if(dataFinal == null || dataFinal.isEmpty()){
+            throw new DataFinalInvalidaException();
+        }
+
+        if(!validarFormatoData(dataFinal)){
+            throw new DataFinalInvalidaException();
+        }
+    }
+
+    private boolean validarFormatoData(String data){
+        try{
+            String[] partes = data.split("/");
+            if (partes.length != 3) {
+                return false;
+            }
+
+            int dia = Integer.parseInt(partes[0]);
+            int mes = Integer.parseInt(partes[1]);
+            int ano = Integer.parseInt(partes[2]);
+
+            if (mes < 1 || mes > 12) return false;
+
+            if (dia < 1 || dia > 31) return false;
+
+            if ((mes == 4 || mes == 6 || mes == 9 || mes == 11) && dia > 30) return false;
+
+            if (mes == 2 && dia > 29) return false;
+
+            return true;
+        }
+        catch(NumberFormatException e){
+            return false;
+        }
+    }
+
+    private void validarHoras(String horas) throws HoraNaoPositivaException{
+        if (horas == null || horas.isEmpty()) {
+            throw new HoraNaoPositivaException();
+        }
+
+        double horasDouble;
+        try{
+            horasDouble = Double.parseDouble(horas.replace(",", "."));
+        }
+        catch(NumberFormatException e) {
+            throw new HoraNaoPositivaException();
+        }
+
+        if(horasDouble <= 0){
+            throw new HoraNaoPositivaException();
+        }
+    }
+
+    private double converterHoras(String horas){
+        return Double.parseDouble(horas.replace(",","."));
+    }
+
+    private String formatarHoras(double horas){
+        if(horas == Math.floor(horas)){
+            return String.format("%d", (int) horas);
+        }
+        else{
+            return String.format("%.1f", horas).replace(".", ",");
+        }
+    }
+
+    public int converterDataInt(String data){
+        String[] partesData = data.split("/");
+        int dia = Integer.parseInt(partesData[0]);
+        int mes = Integer.parseInt(partesData[1]);
+        int ano = Integer.parseInt(partesData[2]);
+
+        return ano * 10000 + mes * 100 + dia;
     }
 
     public double converterSalario(String salarioStr) throws SalarioNaoNegativoException, SalarioNaoNumericoException{
@@ -113,9 +204,7 @@ public class SistemaFolha {
     }
 
     public String getAtributoEmpregado(String id, String atributo) throws Exception {
-        if(id == null || id.isEmpty()){
-            throw new IdentificacaoNulaException();
-        }
+        validarId(id);
 
         Empregado emp = buscarEmpregado(id);
         switch(atributo){
@@ -156,7 +245,95 @@ public class SistemaFolha {
     public void removerEmpregado(String id) throws Exception{
         validarId(id);
 
+        Empregado e = buscarEmpregado(id);
+        empregados.remove(e);
+    }
+
+    public String getHorasNormaisTrabalhadas(String id, String dataInicial, String dataFinal) throws Exception{
+        validarId(id);
+        validarDataInicial(dataInicial);
+        validarDataFinal(dataFinal);
+
         Empregado emp = buscarEmpregado(id);
-        empregados.remove(emp);
+        if(!emp.getTipo().equals("horista")){
+            throw new EmpregadoNaoHoristaException();
+        }
+
+        int diInt = converterDataInt(dataInicial);
+        int dfInt = converterDataInt(dataFinal);
+
+        if(diInt > dfInt){
+            throw new DataInicialPosDataFinalException();
+        }
+
+        EmpregadoHorista horista = (EmpregadoHorista) emp;
+        double horasNormais = 0;
+
+        for(CartaoPonto cartao : horista.getCartaoPontoList()){
+            int dataCartao = converterDataInt(cartao.getData());
+
+            if(dataCartao >= diInt && dataCartao < dfInt){
+                double horasDia = cartao.getHoras();
+                if(horasDia <= 8){
+                    horasNormais += horasDia;
+                }
+                else{
+                    horasNormais += 8;
+                }
+            }
+        }
+
+        return formatarHoras(horasNormais);
+    }
+
+    public String getHorasExtrasTrabalhadas(String id, String dataInicial, String dataFinal) throws Exception{
+        validarId(id);
+        validarDataInicial(dataInicial);
+        validarDataFinal(dataFinal);
+
+        Empregado emp = buscarEmpregado(id);
+        if(!emp.getTipo().equals("horista")){
+            throw new EmpregadoNaoHoristaException();
+        }
+
+        int diInt = converterDataInt(dataInicial);
+        int dfInt = converterDataInt(dataFinal);
+
+        if(diInt > dfInt){
+            throw new DataInicialPosDataFinalException();
+        }
+
+        EmpregadoHorista horista = (EmpregadoHorista) emp;
+        double horasExtras = 0;
+
+        for(CartaoPonto cartao : horista.getCartaoPontoList()){
+            int dataCartao = converterDataInt(cartao.getData());
+
+            if(dataCartao >= diInt && dataCartao < dfInt){
+                double horasDia = cartao.getHoras();
+                if(horasDia > 8){
+                    horasExtras += (horasDia - 8);
+                }
+            }
+        }
+
+        return formatarHoras(horasExtras);
+    }
+
+    public void lancaCartao(String id, String data, String horas) throws Exception{
+        validarId(id);
+        validarData(data);
+        validarHoras(horas);
+
+        Empregado emp = buscarEmpregado(id);
+        if(!emp.getTipo().equals("horista")){
+            throw new EmpregadoNaoHoristaException();
+        }
+
+        double horasDouble = converterHoras(horas);
+
+        CartaoPonto cartao = new CartaoPonto(data, horasDouble);
+        EmpregadoHorista horista = (EmpregadoHorista) emp;
+        horista.adicionarCartaoPonto(cartao);
     }
 }
