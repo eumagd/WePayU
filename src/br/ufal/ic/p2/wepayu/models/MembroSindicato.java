@@ -25,4 +25,8 @@ public class MembroSindicato {
     public List<TaxaServico> getTaxaServicos() {
         return taxaServicoList;
     }
+
+    public double getTaxaSindical() {
+        return taxaSindical;
+    }
 }

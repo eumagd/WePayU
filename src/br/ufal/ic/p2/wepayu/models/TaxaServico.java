@@ -20,4 +20,8 @@ public class TaxaServico {
     public double getValorTaxa() {
         return valorTaxa;
     }
+
+    public void setValorTaxa(double valorTaxa) {
+        this.valorTaxa = valorTaxa;
+    }
 }

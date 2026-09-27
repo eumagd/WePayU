@@ -1,12 +1,16 @@
+//lembrar: organizar classes, métodos e exceptions
+
 package br.ufal.ic.p2.wepayu.models;
 
 import br.ufal.ic.p2.wepayu.Exception.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SistemaFolha {
     private final ArrayList<Empregado> empregados = new ArrayList<>();
     private int contId = 1;
 
+    //métodos privados
     private Empregado buscarEmpregado(String id) throws EmpregadoNaoExisteException{
         for(Empregado e : empregados) {
             if (e.getId().equals(id)) {
@@ -41,36 +45,28 @@ public class SistemaFolha {
     }
 
     private void validarData(String data) throws DataInvalidaException{
-        if(data == null || data.isEmpty()){
-            throw new DataInvalidaException();
-        }
-
         if(!validarFormatoData(data)){
             throw new DataInvalidaException();
         }
     }
 
     private void validarDataInicial(String dataInicial) throws DataInicialInvalidaException{
-        if(dataInicial == null || dataInicial.isEmpty()){
-            throw new DataInicialInvalidaException();
-        }
-
         if(!validarFormatoData(dataInicial)){
             throw new DataInicialInvalidaException();
         }
     }
 
     private void validarDataFinal(String dataFinal) throws DataFinalInvalidaException{
-        if(dataFinal == null || dataFinal.isEmpty()){
-            throw new DataFinalInvalidaException();
-        }
-
         if(!validarFormatoData(dataFinal)){
             throw new DataFinalInvalidaException();
         }
     }
 
     private boolean validarFormatoData(String data){
+        if(data == null || data.isEmpty()){
+            return false;
+        }
+
         try{
             String[] partes = data.split("/");
             if (partes.length != 3) {
@@ -127,6 +123,10 @@ public class SistemaFolha {
         }
     }
 
+    private String formatarValor(double valor){
+        return String.format("%.2f", valor).replace(".", ",");
+    }
+
     private void validarValorVenda(String valorVenda) throws ValorNaoPositivoException {
         double valor = Double.parseDouble(valorVenda.replace(",","."));
 
@@ -145,6 +145,141 @@ public class SistemaFolha {
         return Double.parseDouble(valorVenda.replace(",","."));
     }
 
+    private void validarComissao(String comissaoStr) throws ComissaoNulaException {
+        if (comissaoStr == null || comissaoStr.isEmpty()) {
+            throw new ComissaoNulaException();
+        }
+    }
+
+    private double converterComissao(String comissao) throws ComissaoNaoNumericaException, ComissaoNaoNegativaException {
+        try {
+            double novaComissao = Double.parseDouble(comissao.replace(",", "."));
+            if (novaComissao < 0) {
+                throw new ComissaoNaoNegativaException();
+            }
+            return novaComissao;
+        }
+        catch(NumberFormatException e){
+            throw new ComissaoNaoNumericaException();
+        }
+    }
+
+    private void validarBanco(String banco) throws BancoNuloException {
+        if(banco == null || banco.isEmpty()) throw new BancoNuloException();
+    }
+
+    private void validarAgencia(String agencia) throws AgenciaNulaException {
+        if(agencia == null || agencia.isEmpty()) throw new AgenciaNulaException();
+    }
+
+    private void validarContaCorrente(String contaCorrente) throws ContaCorrenteNulaException {
+        if(contaCorrente == null || contaCorrente.isEmpty()) throw new ContaCorrenteNulaException();
+    }
+
+    private void validarIdSindicato(String idSindicato) throws  IdentificacaoSindicatoNulaException{
+        if(idSindicato == null || idSindicato.isEmpty()) throw new IdentificacaoSindicatoNulaException();
+    }
+
+    private void validarTaxaSindical(String taxaSindical) throws TaxaSindicalNulaException{
+        if(taxaSindical == null || taxaSindical.isEmpty()) throw new TaxaSindicalNulaException();
+    }
+
+    private Empregado getEmpregadoPorSindicato(String idSindicato) throws Exception{
+        for (Empregado e : empregados) {
+            if (e.isSindicalizado() && e.getFiliacao().getIdMembro().equals(idSindicato)){
+                return e;
+            }
+        }
+        throw new MembroSindicatoNaoExisteException();
+    }
+
+    private void mudarTipoEmpregado(Empregado empAntigo, String novoTipo) throws Exception {
+        Empregado empNovo;
+        double salario = empAntigo.getSalario();
+        switch(novoTipo){
+            case "horista":
+                empNovo = new EmpregadoHorista(empAntigo.getNome(), empAntigo.getEndereco(), novoTipo, salario);
+                break;
+            case "assalariado":
+                empNovo = new EmpregadoAssalariado(empAntigo.getNome(), empAntigo.getEndereco(), novoTipo, salario);
+                break;
+            case "comissionado":
+                empNovo = new EmpregadoComissionado(empAntigo.getNome(), empAntigo.getEndereco(), novoTipo, salario, 0.0f);
+                break;
+            default:
+                throw new TipoInvalidoException();
+        }
+
+        empNovo.setId(empAntigo.getId());
+        empNovo.setMetodoPagamento(empAntigo.getMetodoPagamento());
+        empNovo.setFiliacao(empAntigo.getFiliacao());
+        int index = empregados.indexOf(empAntigo);
+        empregados.set(index, empNovo);
+    }
+
+    private List<CartaoPonto> getCartoeFiltrados(String id, String dataInicial, String dataFinal) throws Exception{
+        validarId(id);
+        validarDataInicial(dataInicial);
+        validarDataFinal(dataFinal);
+
+        int diInt = converterDataInt(dataInicial);
+        int dfInt = converterDataInt(dataFinal);
+        if(diInt > dfInt) throw new DataInicialPosDataFinalException();
+
+        Empregado emp = buscarEmpregado(id);
+        List<CartaoPonto> cartoesFiltrados = new ArrayList<>();
+        for(CartaoPonto cartao : emp.getCartaoPontoList()){
+            int dataCartao = converterDataInt(cartao.getData());
+            if(dataCartao>=diInt&&dataCartao<dfInt){
+                cartoesFiltrados.add(cartao);
+            }
+        }
+        return cartoesFiltrados;
+    }
+
+    private List<ResultadoVenda> getVendasFiltradas(String id, String dataInicial, String dataFinal) throws Exception{
+        validarId(id);
+        validarDataInicial(dataInicial);
+        validarDataFinal(dataFinal);
+
+        int diInt = converterDataInt(dataInicial);
+        int dfInt = converterDataInt(dataFinal);
+        if(diInt > dfInt) throw new DataInicialPosDataFinalException();
+
+        Empregado emp = buscarEmpregado(id);
+        List<ResultadoVenda> vendasFiltradas = new ArrayList<>();
+        for(ResultadoVenda venda : emp.getResultadoVendaList()){
+            int dataVenda = converterDataInt(venda.getData());
+            if(dataVenda>=diInt&&dataVenda<dfInt){
+                vendasFiltradas.add(venda);
+            }
+        }
+        return vendasFiltradas;
+    }
+
+    private List<TaxaServico> getTaxasFiltradas(String id, String dataInicial, String dataFinal) throws Exception{
+        validarId(id);
+        validarDataInicial(dataInicial);
+        validarDataFinal(dataFinal);
+
+        Empregado emp = buscarEmpregado(id);
+        if(!emp.isSindicalizado()) throw new EmpregadoNaoSindicalizadoException();
+
+        int diInt = converterDataInt(dataInicial);
+        int dfInt = converterDataInt(dataFinal);
+        if(diInt > dfInt) throw new DataInicialPosDataFinalException();
+
+        List<TaxaServico> taxasFiltradas = new ArrayList<>();
+        for(TaxaServico taxa : emp.getFiliacao().getTaxaServicos()){
+            int dataTaxa = converterDataInt(taxa.getData());
+            if(dataTaxa>=diInt&&dataTaxa<dfInt){
+                taxasFiltradas.add(taxa);
+            }
+        }
+        return taxasFiltradas;
+    }
+
+    //métodos public
     public int converterDataInt(String data){
         String[] partesData = data.split("/");
         int dia = Integer.parseInt(partesData[0]);
@@ -197,27 +332,18 @@ public class SistemaFolha {
         validarNome(nome);
         validarEndereco(endereco);
         validarSalario(salarioStr);
+        validarComissao(comissaoStr);
 
         double salario = converterSalario(salarioStr);
-        if (comissaoStr == null || comissaoStr.isEmpty()) throw new ComissaoNulaException();
+        double comissao = converterComissao(comissaoStr);
         if(tipo.equals("horista") || tipo.equals("assalariado")){
             throw new TipoNaoAplicavelException();
         }
-
-        float comissao;
-        try {
-            comissao = Float.parseFloat(comissaoStr.replace(",","."));
-        }
-        catch(NumberFormatException e){
-            throw new ComissaoNaoNumericaException();
-        }
-        if (comissao < 0) throw new ComissaoNaoNegativaException();
 
         Empregado novoEmpregado = new EmpregadoComissionado(nome, endereco, tipo, salario, comissao);
         String novoId = String.valueOf(contId++);
         novoEmpregado.setId(novoId);
         empregados.add(novoEmpregado);
-
         return novoId;
     }
 
@@ -233,11 +359,25 @@ public class SistemaFolha {
             case "tipo":
                 return emp.getTipo();
             case "salario":
-                return String.format("%.2f", emp.getSalario()).replace(".",",");
+                return formatarValor(emp.getSalario());
             case "comissao":
-                return String.format("%.2f", emp.getComissao()).replace(".",",");
+                return formatarValor(emp.getComissao());
             case "sindicalizado":
                 return String.valueOf(emp.isSindicalizado());
+            case "metodoPagamento":
+                return emp.getMetodoPagamento().getTipoPagamento();
+            case "banco":
+                return emp.getMetodoPagamento().getBanco();
+            case "agencia":
+                return emp.getMetodoPagamento().getAgencia();
+            case "contaCorrente":
+                return emp.getMetodoPagamento().getContaCorrente();
+            case "idSindicato":
+                if(!emp.isSindicalizado()) throw new EmpregadoNaoSindicalizadoException();
+                return emp.getFiliacao().getIdMembro();
+            case "taxaSindical":
+                if(!emp.isSindicalizado()) throw new EmpregadoNaoSindicalizadoException();
+                return formatarValor(emp.getFiliacao().getTaxaSindical());
             default:
                 throw new AtributoNaoExisteException();
         }
@@ -264,8 +404,66 @@ public class SistemaFolha {
         validarId(id);
 
         Empregado emp = buscarEmpregado(id);
-        if (atributo.equals("sindicalizado") && valor.equals("false")){
-            emp.setFiliacao(null);
+        switch(atributo){
+            case "nome":
+                validarNome(valor);
+                emp.setNome(valor);
+                break;
+            case "endereco":
+                validarEndereco(valor);
+                emp.setEndereco(valor);
+                break;
+            case "salario":
+                validarSalario(valor);
+                emp.setSalario(converterSalario(valor));
+                break;
+            case "comissao":
+                validarComissao(valor);
+                emp.setComissao(converterComissao(valor));
+                break;
+            case "metodoPagamento":
+                if(valor.equals("emMaos")){
+                    emp.setMetodoPagamento(new EmMaos());
+                }
+                else if(valor.equals("correios")){
+                    emp.setMetodoPagamento(new Correios());
+                }
+                else if(!valor.equals("banco")){
+                    throw new MetodoPagamentoInvalidoException();
+                }
+                break;
+            case "sindicalizado":
+                if(!valor.equals("true") && !valor.equals("false")){
+                    throw new ValorBooleanoInvalidoException();
+                }
+                if(valor.equals("false")){
+                    emp.setFiliacao(null);
+                }
+                break;
+            case "tipo":
+                mudarTipoEmpregado(emp, valor);
+                break;
+            default:
+                throw new AtributoNaoExisteException();
+        }
+    }
+
+    public void alteraEmpregado(String id, String atributo, String valor, String comissao) throws Exception{
+        validarId(id);
+        Empregado emp = buscarEmpregado(id);
+
+        if (atributo.equals("tipo")){
+            mudarTipoEmpregado(emp, valor);
+            Empregado novoEmp = buscarEmpregado(id);
+
+            if(valor.equals("comissionado")){
+                validarComissao(comissao);
+                novoEmp.setComissao(converterComissao(comissao));
+            }
+            else if(valor.equals("horista") || valor.equals("assalariado")){
+                validarSalario(comissao);;
+                novoEmp.setSalario(converterSalario(comissao));
+            }
         }
     }
 
@@ -274,24 +472,43 @@ public class SistemaFolha {
 
         Empregado emp = buscarEmpregado(id);
         if (atributo.equals("sindicalizado") && valor.equals("true")){
-            for (Empregado e : empregados) {
-                if (e.isSindicalizado() && e.getFiliacao().getIdMembro().equals(idSindicato)) {
+            validarIdSindicato(idSindicato);
+            validarTaxaSindical(taxaSindical);
+
+            double taxa;
+            try{
+                taxa = Double.parseDouble(taxaSindical.replace(",", "."));
+                if(taxa < 0){
+                    throw new TaxaSindicalNaoNegativaException();
+                }
+            }
+            catch(NumberFormatException e){
+                throw new TaxaSindicalNaoNumericaException();
+            }
+
+            for(Empregado e : empregados){
+                if(e.isSindicalizado() && e.getFiliacao().getIdMembro().equals(idSindicato)) {
                     throw new MesmaIdentificacaoException();
                 }
             }
-            double taxa = Double.parseDouble(taxaSindical.replace(",", "."));
+
             MembroSindicato novaFiliacao = new MembroSindicato(idSindicato, taxa);
             emp.setFiliacao(novaFiliacao);
         }
     }
 
-    private Empregado getEmpregadoPorSindicato(String idSindicato) throws Exception{
-        for (Empregado e : empregados) {
-            if (e.isSindicalizado() && e.getFiliacao().getIdMembro().equals(idSindicato)){
-                return e;
-            }
+    public void alteraEmpregado(String id, String atributo, String valor, String banco, String agencia, String contaCorrente) throws Exception{
+        validarId(id);
+
+        Empregado emp = buscarEmpregado(id);
+        if(atributo.equals("metodoPagamento") && valor.equals("banco")){
+            validarBanco(banco);
+            validarAgencia(agencia);
+            validarContaCorrente(contaCorrente);
+
+            MetodoPagamento novoMetodo = new Banco(banco, agencia, contaCorrente);
+            emp.setMetodoPagamento(novoMetodo);
         }
-        throw new MembroSindicatoNaoExisteException();
     }
 
     public void removerEmpregado(String id) throws Exception{
@@ -301,33 +518,15 @@ public class SistemaFolha {
     }
 
     public String getHorasNormaisTrabalhadas(String id, String dataInicial, String dataFinal) throws Exception{
-        validarId(id);
-        validarDataInicial(dataInicial);
-        validarDataFinal(dataFinal);
-
-        Empregado emp = buscarEmpregado(id);
-        if(!emp.getTipo().equals("horista")){
-            throw new EmpregadoNaoHoristaException();
-        }
-
-        int diInt = converterDataInt(dataInicial);
-        int dfInt = converterDataInt(dataFinal);
-        if(diInt > dfInt){
-            throw new DataInicialPosDataFinalException();
-        }
-
-        EmpregadoHorista horista = (EmpregadoHorista) emp;
+        List<CartaoPonto> cartoes = getCartoeFiltrados(id, dataInicial, dataFinal);
         double horasNormais = 0;
-        for(CartaoPonto cartao : horista.getCartaoPontoList()){
-            int dataCartao = converterDataInt(cartao.getData());
-            if(dataCartao >= diInt && dataCartao < dfInt){
-                double horasDia = cartao.getHoras();
-                if(horasDia <= 8){
-                    horasNormais += horasDia;
-                }
-                else{
-                    horasNormais += 8;
-                }
+        for(CartaoPonto cartao : cartoes){
+            double horasDia = cartao.getHoras();
+            if(horasDia <= 8){
+                horasNormais += horasDia;
+            }
+            else{
+                horasNormais += 8;
             }
         }
 
@@ -335,31 +534,12 @@ public class SistemaFolha {
     }
 
     public String getHorasExtrasTrabalhadas(String id, String dataInicial, String dataFinal) throws Exception{
-        validarId(id);
-        validarDataInicial(dataInicial);
-        validarDataFinal(dataFinal);
-
-        Empregado emp = buscarEmpregado(id);
-        if(!emp.getTipo().equals("horista")){
-            throw new EmpregadoNaoHoristaException();
-        }
-
-        int diInt = converterDataInt(dataInicial);
-        int dfInt = converterDataInt(dataFinal);
-        if(diInt > dfInt){
-            throw new DataInicialPosDataFinalException();
-        }
-
-        EmpregadoHorista horista = (EmpregadoHorista) emp;
+        List<CartaoPonto> cartoes = getCartoeFiltrados(id, dataInicial, dataFinal);
         double horasExtras = 0;
-        for(CartaoPonto cartao : horista.getCartaoPontoList()){
-            int dataCartao = converterDataInt(cartao.getData());
-
-            if(dataCartao >= diInt && dataCartao < dfInt){
-                double horasDia = cartao.getHoras();
-                if(horasDia > 8){
-                    horasExtras += (horasDia - 8);
-                }
+        for(CartaoPonto cartao : cartoes){
+            double horasDia = cartao.getHoras();
+            if(horasDia > 8){
+                horasExtras += (horasDia - 8);
             }
         }
 
@@ -372,14 +552,9 @@ public class SistemaFolha {
         validarHoras(horas);
 
         Empregado emp = buscarEmpregado(id);
-        if(!emp.getTipo().equals("horista")){
-            throw new EmpregadoNaoHoristaException();
-        }
-
         double horasDouble = converterHoras(horas);
         CartaoPonto cartao = new CartaoPonto(data, horasDouble);
-        EmpregadoHorista horista = (EmpregadoHorista) emp;
-        horista.adicionarCartaoPonto(cartao);
+        emp.adicionarCartaoPonto(cartao);
     }
 
     public void lancaVenda(String id, String data, String valorVenda) throws Exception{
@@ -388,42 +563,18 @@ public class SistemaFolha {
         validarValorVenda(valorVenda);
 
         Empregado emp = buscarEmpregado(id);
-        if(!emp.getTipo().equals("comissionado")){
-            throw new EmpregadoNaoComissionadoException();
-        }
-
         double novoValor = converterValorVenda(valorVenda);
         ResultadoVenda novaVenda = new ResultadoVenda(data, novoValor);
-        EmpregadoComissionado comissionado = (EmpregadoComissionado) emp;
-        comissionado.adicionarResultadoVenda(novaVenda);
+        emp.adicionarResultadoVenda(novaVenda);
     }
 
     public String getVendasRealizadas(String id, String dataInicial, String dataFinal) throws Exception{
-        validarId(id);
-        validarDataInicial(dataInicial);
-        validarDataFinal(dataFinal);
-
-        Empregado emp = buscarEmpregado(id);
-        if(!emp.getTipo().equals("comissionado")){
-            throw new EmpregadoNaoComissionadoException();
-        }
-
-        int diInt = converterDataInt(dataInicial);
-        int dfInt = converterDataInt(dataFinal);
-        if(diInt > dfInt){
-            throw new DataInicialPosDataFinalException();
-        }
-
-        EmpregadoComissionado comissionado = (EmpregadoComissionado) emp;
+        List<ResultadoVenda> vendas = getVendasFiltradas(id, dataInicial, dataFinal);
         double vendasTotais = 0;
-        for(ResultadoVenda venda : comissionado.getResultadoVendaList()){
-            int dataVenda = converterDataInt(venda.getData());
-            if(dataVenda >= diInt && dataVenda < dfInt){
-                vendasTotais += venda.getValorVenda();
-            }
+        for(ResultadoVenda venda : vendas){
+            vendasTotais += venda.getValorVenda();
         }
-
-        return String.format("%.2f", vendasTotais).replace(".",",");
+        return formatarValor(vendasTotais);
     }
 
     public void lancaTaxaServico(String idMembro, String data, String taxaServico) throws Exception{
@@ -437,29 +588,11 @@ public class SistemaFolha {
     }
 
     public String getTaxasServico(String id, String dataInicial, String dataFinal) throws Exception {
-        validarId(id);
-        validarDataInicial(dataInicial);
-        validarDataFinal(dataFinal);
-
-        Empregado emp = buscarEmpregado(id);
-        if (!emp.isSindicalizado()) {
-            throw new EmpregadoNaoSindicalizadoException();
-        }
-
-        int diInt = converterDataInt(dataInicial);
-        int dfInt = converterDataInt(dataFinal);
-        if (diInt > dfInt) {
-            throw new DataInicialPosDataFinalException();
-        }
-
+        List<TaxaServico> taxas = getTaxasFiltradas(id, dataInicial, dataFinal);
         double totalTaxas = 0;
-        for (TaxaServico taxa : emp.getFiliacao().getTaxaServicos()) {
-            int dataTaxa = converterDataInt(taxa.getData());
-            if (dataTaxa >= diInt && dataTaxa < dfInt) {
-                totalTaxas += taxa.getValorTaxa();
-            }
+        for(TaxaServico taxa : taxas){
+            totalTaxas += taxa.getValorTaxa();
         }
-
-        return String.format("%.2f", totalTaxas).replace(".", ",");
+        return formatarValor(totalTaxas);
     }
 }

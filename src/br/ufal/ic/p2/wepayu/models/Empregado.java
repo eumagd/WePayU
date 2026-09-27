@@ -2,6 +2,8 @@ package br.ufal.ic.p2.wepayu.models;
 
 import br.ufal.ic.p2.wepayu.Exception.*;
 
+import java.util.List;
+
 public class Empregado {
     private String id;
     private String nome;
@@ -9,6 +11,7 @@ public class Empregado {
     private String tipo;
     private double salario;
     private MembroSindicato filiacao;
+    private MetodoPagamento metodoPagamento = new EmMaos();
 
     public Empregado(String nome, String endereco, String tipo, double salario){
         this.nome = nome;
@@ -61,6 +64,26 @@ public class Empregado {
         throw new EmpregadoNaoComissionadoException();
     }
 
+    public void setComissao(double comissao) throws Exception{
+        throw new EmpregadoNaoComissionadoException();
+    }
+
+    public void adicionarCartaoPonto(CartaoPonto cartao) throws EmpregadoNaoHoristaException{
+        throw new EmpregadoNaoHoristaException();
+    }
+
+    public List<CartaoPonto> getCartaoPontoList() throws EmpregadoNaoHoristaException{
+        throw new EmpregadoNaoHoristaException();
+    }
+
+    public void adicionarResultadoVenda(ResultadoVenda venda) throws EmpregadoNaoComissionadoException{
+        throw new EmpregadoNaoComissionadoException();
+    }
+
+    public List<ResultadoVenda> getResultadoVendaList() throws EmpregadoNaoComissionadoException{
+        throw new EmpregadoNaoComissionadoException();
+    }
+
     public boolean isSindicalizado(){
         return this.filiacao != null;
     }
@@ -71,5 +94,13 @@ public class Empregado {
 
     public void setFiliacao(MembroSindicato filiacao){
         this.filiacao = filiacao;
+    }
+
+    public MetodoPagamento getMetodoPagamento() {
+        return metodoPagamento;
+    }
+
+    public void setMetodoPagamento(MetodoPagamento metodoPagamento) {
+        this.metodoPagamento = metodoPagamento;
     }
 }

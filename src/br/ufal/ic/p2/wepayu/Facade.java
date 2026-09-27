@@ -29,8 +29,16 @@ public class Facade{
         sistema.alteraEmpregado(id, atributo, valor);
     }
 
+    public void alteraEmpregado(String id, String atributo, String valor, String comissao) throws Exception{
+        sistema.alteraEmpregado(id, atributo, valor, comissao);
+    }
+
     public void alteraEmpregado(String id, String atributo, String valor, String idSindicato, String taxaSindical) throws Exception{
         sistema.alteraEmpregado(id, atributo,valor, idSindicato, taxaSindical);
+    }
+
+    public void alteraEmpregado(String id, String atributo, String valor, String banco, String agencia, String contaCorrente) throws Exception{
+        sistema.alteraEmpregado(id, atributo, valor, banco, agencia, contaCorrente);
     }
 
     public void removerEmpregado(String id) throws Exception{

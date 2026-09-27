@@ -24,16 +24,21 @@ Empregados podem ser sindicalizados: o sindicato cobra uma taxa mensal, além de
 
 A folha é rodada diariamente, pagando os empregados cujo salário vence naquele dia.
 
-## Milestone 1 — User Stories 1 a 8
+## Milestone 1 — User Stories 1 a 8 (10/09 - 27/09)
 
 - [X] US1 — Adição de um empregado
 - [X] US2 — Remoção de um empregado
 - [X] US3 — Lançar um cartão de ponto
 - [X] US4 — Lançar um resultado de venda
 - [X] US5 — Lançar uma taxa de serviço
-- [ ] US6 — Alterar detalhes de um empregado
+- [X] US6 — Alterar detalhes de um empregado
 - [ ] US7 — Rodar a folha de pagamento para hoje
 - [ ] US8 — Undo/redo
+
+## Milestone 2 — User Stories 9 a ...
+- [] US9 - Agenda de pagamento
+- [] US10 - Criação de novas agendas de pagamento
+- [] US11 - ...
 
 ## Arquitetura
 
@@ -44,25 +49,28 @@ A folha é rodada diariamente, pagando os empregados cujo salário vence naquele
 ## Comandos da Façade (US 1 a 8)
 
 ```
-zerarSistema
-criarEmpregado nome=<String> endereco=<String> tipo=<String> salario=<String>
-criarEmpregado nome=<String> endereco=<String> tipo=comissionado salario=<String> comissao=<String>
-removerEmpregado emp=<String>
-alteraEmpregado emp=<String> atributo=<String> valor1=<String>
-getAtributoEmpregado emp=<String> atributo=<String>
-getEmpregadoPorNome nome=<String> indice=<int>
-lancaCartao emp=<String> data=<String> horas=<String>
-lancaVenda emp=<String> data=<String> valor=<String>
-lancaTaxaServico emp=<String> data=<String> valor=<String>
-getHorasTrabalhadas emp=<String> dataInicial=<String> dataFinal=<String>
-getHorasExtrasTrabalhadas emp=<String> dataInicial=<String> dataFinal=<String>
-getVendasRealizadas emp=<String> dataInicial=<String> dataFinal=<String>
-getTaxasServico emp=<String> dataInicial=<String> dataFinal=<String>
-rodaFolha data=<String> saida=<String>
-totalFolha data=<String>
-undo
-redo
-encerrarSistema
+<void> zerarSistema
+<void> alteraEmpregado emp=<String> atributo=<String> valor1=<String>
+<void> alteraEmpregado emp=<String> atributo=sindicalizado valor1=false
+<void> alteraEmpregado emp=<String> atributo=sindicalizado valor=true idSindicato=<String> taxaSindical=<String>
+<void> alteraEmpregado emp=<String> atributo=metodoPagamento valor1=banco banco=<String> agencia=<String> contaCorrente=<String>
+<String> criarEmpregado nome=<String> endereco=<String> tipo=<String> salario=<String>
+<String> criarEmpregado nome=<String> endereco=<String> tipo=comissionado salario=<String> comissao=<String>
+<void> encerrarSistema
+<String> getAtributoEmpregado emp=<String> atributo=<String>
+<String> getEmpregadoPorNome nome=<String> indice=<int>
+<String> getHorasExtrasTrabalhadas emp=<String> dataInicial=<String> dataFinal=<String>
+<String> getHorasTrabalhadas emp=<String> dataInicial=<String> dataFinal=<String>
+<String> getTaxasServico emp=<String> dataInicial=<String> dataFinal=<String>
+<String> getVendasRealizadas emp=<String> dataInicial=<String> dataFinal=<String>
+<void> lancaCartao emp=${id1} data=<String> horas=<String>
+<void> lancaTaxaServico emp=<String> data=<String> valor=<String>
+<void> lancaVenda emp=<String> data=<String> valor=<String>
+<void> removerEmpregado emp=<String>
+<void> redo
+<void> rodaFolha data=<String> saida=<String>
+<String> totalFolha data=<String>
+<void> undo
 ```
 
 ## Glossário (resumo)

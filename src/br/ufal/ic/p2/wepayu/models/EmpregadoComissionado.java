@@ -12,6 +12,7 @@ public class EmpregadoComissionado extends Empregado{
         this.comissao = comissao;
     }
 
+    @Override
     public void setComissao(double comissao){
         this.comissao = comissao;
     }
