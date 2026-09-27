@@ -127,11 +127,17 @@ public class SistemaFolha {
         }
     }
 
-    private void validarValorVenda(String valorVenda) throws ValorVendaNaoPositivoException{
+    private void validarValorVenda(String valorVenda) throws ValorNaoPositivoException {
         double valor = Double.parseDouble(valorVenda.replace(",","."));
 
         if(valor <= 0){
-            throw new ValorVendaNaoPositivoException();
+            throw new ValorNaoPositivoException();
+        }
+    }
+
+    private void validarIdMembro(String idMembro) throws IdentificacaoMembroNulaException{
+        if(idMembro == null || idMembro.isEmpty()){
+            throw new IdentificacaoMembroNulaException();
         }
     }
 
@@ -231,7 +237,7 @@ public class SistemaFolha {
             case "comissao":
                 return String.format("%.2f", emp.getComissao()).replace(".",",");
             case "sindicalizado":
-                return "false";
+                return String.valueOf(emp.isSindicalizado());
             default:
                 throw new AtributoNaoExisteException();
         }
@@ -252,6 +258,40 @@ public class SistemaFolha {
         }
 
         throw new NomeEmpregadoNaoExisteException();
+    }
+
+    public void alteraEmpregado(String id, String atributo, String valor) throws Exception{
+        validarId(id);
+
+        Empregado emp = buscarEmpregado(id);
+        if (atributo.equals("sindicalizado") && valor.equals("false")){
+            emp.setFiliacao(null);
+        }
+    }
+
+    public void alteraEmpregado(String id, String atributo, String valor, String idSindicato, String taxaSindical) throws Exception{
+        validarId(id);
+
+        Empregado emp = buscarEmpregado(id);
+        if (atributo.equals("sindicalizado") && valor.equals("true")){
+            for (Empregado e : empregados) {
+                if (e.isSindicalizado() && e.getFiliacao().getIdMembro().equals(idSindicato)) {
+                    throw new MesmaIdentificacaoException();
+                }
+            }
+            double taxa = Double.parseDouble(taxaSindical.replace(",", "."));
+            MembroSindicato novaFiliacao = new MembroSindicato(idSindicato, taxa);
+            emp.setFiliacao(novaFiliacao);
+        }
+    }
+
+    private Empregado getEmpregadoPorSindicato(String idSindicato) throws Exception{
+        for (Empregado e : empregados) {
+            if (e.isSindicalizado() && e.getFiliacao().getIdMembro().equals(idSindicato)){
+                return e;
+            }
+        }
+        throw new MembroSindicatoNaoExisteException();
     }
 
     public void removerEmpregado(String id) throws Exception{
@@ -384,5 +424,42 @@ public class SistemaFolha {
         }
 
         return String.format("%.2f", vendasTotais).replace(".",",");
+    }
+
+    public void lancaTaxaServico(String idMembro, String data, String taxaServico) throws Exception{
+        validarIdMembro(idMembro);
+        validarData(data);
+        validarValorVenda(taxaServico);
+
+        Empregado emp = getEmpregadoPorSindicato(idMembro);
+        double valor = converterValorVenda(taxaServico);
+        emp.getFiliacao().adicionarTaxaServico(new TaxaServico(data, valor));
+    }
+
+    public String getTaxasServico(String id, String dataInicial, String dataFinal) throws Exception {
+        validarId(id);
+        validarDataInicial(dataInicial);
+        validarDataFinal(dataFinal);
+
+        Empregado emp = buscarEmpregado(id);
+        if (!emp.isSindicalizado()) {
+            throw new EmpregadoNaoSindicalizadoException();
+        }
+
+        int diInt = converterDataInt(dataInicial);
+        int dfInt = converterDataInt(dataFinal);
+        if (diInt > dfInt) {
+            throw new DataInicialPosDataFinalException();
+        }
+
+        double totalTaxas = 0;
+        for (TaxaServico taxa : emp.getFiliacao().getTaxaServicos()) {
+            int dataTaxa = converterDataInt(taxa.getData());
+            if (dataTaxa >= diInt && dataTaxa < dfInt) {
+                totalTaxas += taxa.getValorTaxa();
+            }
+        }
+
+        return String.format("%.2f", totalTaxas).replace(".", ",");
     }
 }

@@ -30,7 +30,7 @@ A folha é rodada diariamente, pagando os empregados cujo salário vence naquele
 - [X] US2 — Remoção de um empregado
 - [X] US3 — Lançar um cartão de ponto
 - [X] US4 — Lançar um resultado de venda
-- [ ] US5 — Lançar uma taxa de serviço
+- [X] US5 — Lançar uma taxa de serviço
 - [ ] US6 — Alterar detalhes de um empregado
 - [ ] US7 — Rodar a folha de pagamento para hoje
 - [ ] US8 — Undo/redo

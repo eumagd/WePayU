@@ -8,6 +8,7 @@ public class Empregado {
     private String endereco;
     private String tipo;
     private double salario;
+    private MembroSindicato filiacao;
 
     public Empregado(String nome, String endereco, String tipo, double salario){
         this.nome = nome;
@@ -58,5 +59,17 @@ public class Empregado {
 
     public double getComissao() throws EmpregadoNaoComissionadoException{
         throw new EmpregadoNaoComissionadoException();
+    }
+
+    public boolean isSindicalizado(){
+        return this.filiacao != null;
+    }
+
+    public MembroSindicato getFiliacao(){
+        return filiacao;
+    }
+
+    public void setFiliacao(MembroSindicato filiacao){
+        this.filiacao = filiacao;
     }
 }

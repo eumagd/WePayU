@@ -1,6 +1,5 @@
 package br.ufal.ic.p2.wepayu;
 
-import br.ufal.ic.p2.wepayu.Exception.NomeEmpregadoNaoExisteException;
 import br.ufal.ic.p2.wepayu.models.SistemaFolha;
 
 public class Facade{
@@ -26,6 +25,14 @@ public class Facade{
         return sistema.getEmpregadoPorNome(nome, indice);
     }
 
+    public void alteraEmpregado(String id, String atributo, String valor) throws Exception{
+        sistema.alteraEmpregado(id, atributo, valor);
+    }
+
+    public void alteraEmpregado(String id, String atributo, String valor, String idSindicato, String taxaSindical) throws Exception{
+        sistema.alteraEmpregado(id, atributo,valor, idSindicato, taxaSindical);
+    }
+
     public void removerEmpregado(String id) throws Exception{
         sistema.removerEmpregado(id);
     }
@@ -48,6 +55,14 @@ public class Facade{
 
     public String getVendasRealizadas(String id, String dataInicial, String dataFinal) throws Exception{
         return sistema.getVendasRealizadas(id, dataInicial, dataFinal);
+    }
+
+    public void lancaTaxaServico(String idMembro, String data, String taxaServico) throws Exception{
+        sistema.lancaTaxaServico(idMembro, data, taxaServico);
+    }
+
+    public String getTaxasServico(String id, String dataInicial, String dataFinal) throws Exception{
+        return sistema.getTaxasServico(id, dataInicial, dataFinal);
     }
 
     public void encerrarSistema(){}
