@@ -32,13 +32,12 @@ A folha é rodada diariamente, pagando os empregados cujo salário vence naquele
 - [X] US4 — Lançar um resultado de venda
 - [X] US5 — Lançar uma taxa de serviço
 - [X] US6 — Alterar detalhes de um empregado
-- [ ] US7 — Rodar a folha de pagamento para hoje
+- [X] US7 — Rodar a folha de pagamento para hoje
 - [ ] US8 — Undo/redo
 
-## Milestone 2 — User Stories 9 a ...
+## Milestone 2 — User Stories 9 a 10 (06/09 - 25/09)
 - [ ] US9 - Agenda de pagamento
 - [ ] US10 - Criação de novas agendas de pagamento
-- [ ] US11 - ...
 
 ## Arquitetura
 

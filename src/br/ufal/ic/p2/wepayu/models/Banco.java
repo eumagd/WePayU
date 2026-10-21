@@ -30,4 +30,9 @@ public class Banco extends MetodoPagamento{
     public String getContaCorrente(){
         return contaCorrente;
     }
+
+    @Override
+    public String getDescricao(String endereco) {
+        return banco + ", Ag. " + agencia + " CC " + contaCorrente;
+    }
 }

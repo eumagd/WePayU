@@ -1,10 +1,11 @@
 package br.ufal.ic.p2.wepayu.models;
 
-import br.ufal.ic.p2.wepayu.Exception.*;
+import br.ufal.ic.p2.wepayu.exception.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
-public class Empregado {
+public abstract class Empregado {
     private String id;
     private String nome;
     private String endereco;
@@ -12,6 +13,8 @@ public class Empregado {
     private double salario;
     private MembroSindicato filiacao;
     private MetodoPagamento metodoPagamento = new EmMaos();
+    protected String dataUltimoPagamento = "31/12/2004";
+    private double descontosPendentes;
 
     public Empregado(String nome, String endereco, String tipo, double salario){
         this.nome = nome;
@@ -19,6 +22,14 @@ public class Empregado {
         this.tipo = tipo;
         this.salario = salario;
     }
+
+    public int getHorasNormaisPagas(String dataAtual) { return 0; }
+    public int getHorasExtrasPagas(String dataAtual) { return 0; }
+    public double getVendasPagas(String dataAtual) { return 0.0; }
+    public double getSalarioFixoPago(String dataAtual) { return 0.0; }
+
+    public abstract boolean verificaDiaPagamento(String dataAtual);
+    protected abstract double calcularSalarioBruto(String dataAtual);
 
     public String getId(){
         return id;
@@ -102,5 +113,73 @@ public class Empregado {
 
     public void setMetodoPagamento(MetodoPagamento metodoPagamento) {
         this.metodoPagamento = metodoPagamento;
+    }
+
+    protected LocalDate converteParaLocalDate(String data){
+        String[] partes = data.split("/");
+        int dia = Integer.parseInt(partes[0]);
+        int mes = Integer.parseInt(partes[1]);
+        int ano = Integer.parseInt(partes[2]);
+
+        return LocalDate.of(ano, mes, dia);
+    }
+
+    protected boolean ehSexta(String data){
+        LocalDate dataLD = converteParaLocalDate(data);
+        return dataLD.getDayOfWeek().getValue() == 5;
+    }
+
+    protected long diasEntre(String dataInicial, String dataFinal){
+        LocalDate inicio = converteParaLocalDate(dataInicial);
+        LocalDate fim = converteParaLocalDate(dataFinal);
+        return fim.toEpochDay() - inicio.toEpochDay();
+    }
+
+    protected boolean ehUltimoDiaUtil(String data){
+        LocalDate dataLD = converteParaLocalDate(data);
+        int ultimoDiaUtil = dataLD.lengthOfMonth();
+        LocalDate dataUltimoDia = LocalDate.of(dataLD.getYear(), dataLD.getMonthValue(), ultimoDiaUtil);
+        int diaSemana = dataUltimoDia.getDayOfWeek().getValue();
+
+        if(diaSemana == 6){
+            dataUltimoDia = dataUltimoDia.minusDays(1);
+        }
+        else if(diaSemana == 7){
+            dataUltimoDia = dataUltimoDia.minusDays(2);
+        }
+        return dataLD.equals(dataUltimoDia);
+    }
+
+    public String getPagamentoAnterior(String dataAtual) {
+        return this.dataUltimoPagamento;
+    }
+
+    public void atualizarProximoPagamento(String dataAtual, double descontosPendentes){
+        this.dataUltimoPagamento = dataAtual;
+        this.descontosPendentes = descontosPendentes;
+    }
+
+    public double getDescontosFolha(String dataAtual) {
+        if(!isSindicalizado()) return 0.0;
+
+        String pagamentoAnterior = getPagamentoAnterior(dataAtual);
+        LocalDate inicio = converteParaLocalDate(pagamentoAnterior);
+        LocalDate fim = converteParaLocalDate(dataAtual);
+
+        long dias = fim.toEpochDay() - inicio.toEpochDay();
+
+        if(this instanceof EmpregadoAssalariado && dias < 28){
+            dias = 28;
+        }
+
+        double descontos = descontosPendentes + filiacao.getTaxaSindical() * dias;
+
+        for(TaxaServico taxa : filiacao.getTaxaServicos()){
+            LocalDate dataAux = converteParaLocalDate(taxa.getData());
+            if(dataAux.isAfter(inicio) && !dataAux.isAfter(fim)){
+                descontos += taxa.getValorTaxa();
+            }
+        }
+        return descontos;
     }
 }

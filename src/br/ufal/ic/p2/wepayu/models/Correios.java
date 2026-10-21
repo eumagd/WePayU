@@ -6,4 +6,9 @@ public class Correios extends MetodoPagamento{
     public String getTipoPagamento(){
         return "correios";
     }
+
+    @Override
+    public String getDescricao(String endereco) {
+        return "Correios, " + endereco;
+    }
 }

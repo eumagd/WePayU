@@ -73,5 +73,13 @@ public class Facade{
         return sistema.getTaxasServico(id, dataInicial, dataFinal);
     }
 
+    public String totalFolha(String data) throws Exception {
+        return sistema.totalFolha(data);
+    }
+
+    public void rodaFolha(String data, String saida) throws Exception {
+        sistema.rodaFolha(data, saida);
+    }
+
     public void encerrarSistema(){}
 }

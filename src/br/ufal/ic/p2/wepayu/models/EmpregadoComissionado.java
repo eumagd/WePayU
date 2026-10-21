@@ -1,5 +1,6 @@
 package br.ufal.ic.p2.wepayu.models;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,5 +29,39 @@ public class EmpregadoComissionado extends Empregado{
 
     public List<ResultadoVenda> getResultadoVendaList(){
         return resultadoVendaList;
+    }
+
+    @Override
+    public boolean verificaDiaPagamento(String dataAtual){
+        if (!ehSexta(dataAtual)) return false;
+        long dias = diasEntre(getPagamentoAnterior(dataAtual), dataAtual);
+        return dias > 0 && (dias % 14 == 0);
+    }
+
+    @Override
+    protected double calcularSalarioBruto(String dataAtual){
+        double bruto = getSalarioFixoPago(dataAtual) + (getVendasPagas(dataAtual) * getComissao());
+        return Math.floor(bruto * 100.0) / 100.0;
+    }
+
+    @Override
+    public double getVendasPagas(String dataAtual) {
+        LocalDate inicio = converteParaLocalDate(getPagamentoAnterior(dataAtual));
+        LocalDate fim = converteParaLocalDate(dataAtual);
+        double total = 0;
+
+        for (ResultadoVenda venda : resultadoVendaList) {
+            LocalDate d = converteParaLocalDate(venda.getData());
+            if (!d.isBefore(inicio) && !d.isAfter(fim)) {
+                total += venda.getValorVenda();
+            }
+        }
+        return total;
+    }
+
+    @Override
+    public double getSalarioFixoPago(String dataAtual) {
+        double valor = (getSalario() * 12) / 26;
+        return Math.floor(valor * 100.0) / 100.0;
     }
 }
