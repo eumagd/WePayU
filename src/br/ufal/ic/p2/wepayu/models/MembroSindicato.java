@@ -29,4 +29,12 @@ public class MembroSindicato {
     public double getTaxaSindical() {
         return taxaSindical;
     }
+
+    public MembroSindicato copiar(){
+        MembroSindicato copia = new MembroSindicato(idMembro, taxaSindical);
+        for(TaxaServico taxa : taxaServicoList){
+            copia.adicionarTaxaServico(new TaxaServico(taxa.getData(), taxa.getValorTaxa()));
+        }
+        return copia;
+    }
 }

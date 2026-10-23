@@ -30,6 +30,25 @@ public abstract class Empregado {
 
     public abstract boolean verificaDiaPagamento(String dataAtual);
     protected abstract double calcularSalarioBruto(String dataAtual);
+    public abstract Empregado copiar();
+
+    protected Empregado copiarDados(Empregado copia){
+        copia.setId(id);
+        copia.setNome(nome);
+        copia.setEndereco(endereco);
+        copia.setTipo(tipo);
+        copia.setSalario(salario);
+        copia.setMetodoPagamento(metodoPagamento.copiar());
+        copia.atualizarProximoPagamento(dataUltimoPagamento, descontosPendentes);
+        if(filiacao != null){
+            copia.setFiliacao(filiacao.copiar());
+        }
+        return copia;
+    }
+
+    protected boolean ehEmpregadoAssalariado(){
+        return false;
+    }
 
     public String getId(){
         return id;
@@ -159,6 +178,14 @@ public abstract class Empregado {
         this.descontosPendentes = descontosPendentes;
     }
 
+    public String getDataUltimoPagamento(){
+        return dataUltimoPagamento;
+    }
+
+    public double getDescontosPendentes(){
+        return descontosPendentes;
+    }
+
     public double getDescontosFolha(String dataAtual) {
         if(!isSindicalizado()) return 0.0;
 
@@ -168,7 +195,7 @@ public abstract class Empregado {
 
         long dias = fim.toEpochDay() - inicio.toEpochDay();
 
-        if(this instanceof EmpregadoAssalariado && dias < 28){
+        if(ehEmpregadoAssalariado() && dias < 28){
             dias = 28;
         }
 

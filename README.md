@@ -33,7 +33,7 @@ A folha é rodada diariamente, pagando os empregados cujo salário vence naquele
 - [X] US5 — Lançar uma taxa de serviço
 - [X] US6 — Alterar detalhes de um empregado
 - [X] US7 — Rodar a folha de pagamento para hoje
-- [ ] US8 — Undo/redo
+- [X] US8 — Undo/redo
 
 ## Milestone 2 — User Stories 9 a 10 (06/09 - 25/09)
 - [ ] US9 - Agenda de pagamento
@@ -45,7 +45,7 @@ A folha é rodada diariamente, pagando os empregados cujo salário vence naquele
 - Acesso à lógica de negócio feito através de uma **Façade**, que expõe os comandos usados pelos testes de aceitação (linguagem de script do EasyAccept).
 - Persistência planejada via XML (`java.beans.XMLEncoder` / `XMLDecoder`).
 
-## Comandos da Façade (US 1 a 8)
+## Comandos da Facade (US 1 a 8)
 
 ```
 <void> zerarSistema

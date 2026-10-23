@@ -14,6 +14,16 @@ public class EmpregadoComissionado extends Empregado{
     }
 
     @Override
+    public Empregado copiar(){
+        EmpregadoComissionado copia = new EmpregadoComissionado(
+                getNome(), getEndereco(), getTipo(), getSalario(), comissao);
+        for(ResultadoVenda venda : resultadoVendaList){
+            copia.adicionarResultadoVenda(new ResultadoVenda(venda.getData(), venda.getValorVenda()));
+        }
+        return copiarDados(copia);
+    }
+
+    @Override
     public void setComissao(double comissao){
         this.comissao = comissao;
     }

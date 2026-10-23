@@ -6,6 +6,16 @@ public class EmpregadoAssalariado extends Empregado {
     }
 
     @Override
+    public Empregado copiar(){
+        return copiarDados(new EmpregadoAssalariado(getNome(), getEndereco(), getTipo(), getSalario()));
+    }
+
+    @Override
+    protected boolean ehEmpregadoAssalariado(){
+        return true;
+    }
+
+    @Override
     public boolean verificaDiaPagamento(String dataAtual) {
         return ehUltimoDiaUtil(dataAtual);
     }

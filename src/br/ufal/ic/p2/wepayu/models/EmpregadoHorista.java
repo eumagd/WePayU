@@ -12,6 +12,15 @@ public class EmpregadoHorista extends Empregado{
     }
 
     @Override
+    public Empregado copiar(){
+        EmpregadoHorista copia = new EmpregadoHorista(getNome(), getEndereco(), getTipo(), getSalario());
+        for(CartaoPonto cartao : cartaoPontoList){
+            copia.adicionarCartaoPonto(new CartaoPonto(cartao.getData(), cartao.getHoras()));
+        }
+        return copiarDados(copia);
+    }
+
+    @Override
     public boolean verificaDiaPagamento(String dataAtual) {
         return ehSexta(dataAtual);
     }

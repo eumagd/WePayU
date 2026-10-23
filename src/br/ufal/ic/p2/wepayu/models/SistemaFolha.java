@@ -11,6 +11,17 @@ public class SistemaFolha {
     private final ArrayList<Empregado> empregados = new ArrayList<>();
     private int contId = 1;
 
+    public SistemaFolha copiar(){
+        SistemaFolha copia = new SistemaFolha();
+        copia.contId = contId;
+
+        for(Empregado empregado : empregados){
+            copia.empregados.add(empregado.copiar());
+        }
+
+        return copia;
+    }
+
     //métodos privados
     private Empregado buscarEmpregado(String id) throws EmpregadoNaoExisteException{
         for(Empregado e : empregados){
@@ -399,6 +410,10 @@ public class SistemaFolha {
         }
 
         throw new NomeEmpregadoNaoExisteException();
+    }
+
+    public int getNumeroDeEmpregados(){
+        return empregados.size();
     }
 
     public void alteraEmpregado(String id, String atributo, String valor) throws Exception{

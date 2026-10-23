@@ -4,6 +4,7 @@ import br.ufal.ic.p2.wepayu.exception.EmpregadoNaoRecebeEmBancoException;
 
 public abstract class MetodoPagamento {
     public abstract String getTipoPagamento();
+    public abstract MetodoPagamento copiar();
 
     public String getBanco() throws EmpregadoNaoRecebeEmBancoException{
         throw new EmpregadoNaoRecebeEmBancoException();

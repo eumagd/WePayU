@@ -12,6 +12,11 @@ public class Banco extends MetodoPagamento{
     }
 
     @Override
+    public MetodoPagamento copiar(){
+        return new Banco(banco, agencia, contaCorrente);
+    }
+
+    @Override
     public String getTipoPagamento(){
         return "banco";
     }
