@@ -1,6 +1,6 @@
 package br.ufal.ic.p2.wepayu.models;
 
-import br.ufal.ic.p2.wepayu.exception.EmpregadoNaoRecebeEmBancoException;
+import br.ufal.ic.p2.wepayu.exception.pagamento.EmpregadoNaoRecebeEmBancoException;
 
 public abstract class MetodoPagamento {
     public abstract String getTipoPagamento();

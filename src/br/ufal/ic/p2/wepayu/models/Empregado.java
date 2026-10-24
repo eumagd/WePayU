@@ -1,6 +1,8 @@
 package br.ufal.ic.p2.wepayu.models;
 
-import br.ufal.ic.p2.wepayu.exception.*;
+import br.ufal.ic.p2.wepayu.exception.empregados.*;
+import br.ufal.ic.p2.wepayu.exception.folha.*;
+import br.ufal.ic.p2.wepayu.exception.pagamento.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,6 +33,20 @@ public abstract class Empregado {
     public abstract boolean verificaDiaPagamento(String dataAtual);
     protected abstract double calcularSalarioBruto(String dataAtual);
     public abstract Empregado copiar();
+
+    public double getSalarioBruto(String dataAtual){
+        return calcularSalarioBruto(dataAtual);
+    }
+
+    public double getComissaoFolha(){
+        return 0;
+    }
+
+    public static void validarIdentificacao(String id) throws IdentificacaoNulaException{
+        if(id == null || id.isEmpty()){
+            throw new IdentificacaoNulaException();
+        }
+    }
 
     protected Empregado copiarDados(Empregado copia){
         copia.setId(id);
@@ -94,7 +110,7 @@ public abstract class Empregado {
         throw new EmpregadoNaoComissionadoException();
     }
 
-    public void setComissao(double comissao) throws Exception{
+    public void setComissao(double comissao) throws EmpregadoNaoComissionadoException{
         throw new EmpregadoNaoComissionadoException();
     }
 

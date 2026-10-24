@@ -31,7 +31,11 @@ public class EmpregadoHorista extends Empregado{
     }
 
     public List<CartaoPonto> getCartaoPontoList(){
-        return cartaoPontoList;
+        List<CartaoPonto> cartoes = new ArrayList<>();
+        for(CartaoPonto cartao : cartaoPontoList){
+            cartoes.add(new CartaoPonto(cartao.getData(), cartao.getHoras()));
+        }
+        return cartoes;
     }
 
     @Override

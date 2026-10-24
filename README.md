@@ -42,7 +42,9 @@ A folha é rodada diariamente, pagando os empregados cujo salário vence naquele
 ## Arquitetura
 
 - Lógica de negócio separada de qualquer interface (não haverá GUI no projeto).
-- Acesso à lógica de negócio feito através de uma **Façade**, que expõe os comandos usados pelos testes de aceitação (linguagem de script do EasyAccept).
+- Acesso à lógica de negócio feito através de uma **Facade**, que expõe os comandos usados pelos testes de aceitação (linguagem de script do EasyAccept).
+- `SistemaFolha` está no pacote `sistema`; validações e conversões específicas ficam nos modelos e em classes auxiliares do pacote `models`.
+- Exceções estão organizadas nos subpacotes `exception.empregados`, `exception.folha`, `exception.pagamento`, `exception.sindicato` e `exception.sistema`.
 - Persistência planejada via XML (`java.beans.XMLEncoder` / `XMLDecoder`).
 
 ## Comandos da Facade (US 1 a 8)

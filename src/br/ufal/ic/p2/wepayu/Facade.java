@@ -1,11 +1,13 @@
 package br.ufal.ic.p2.wepayu;
 
-import br.ufal.ic.p2.wepayu.exception.ComandoAposEncerrarException;
-import br.ufal.ic.p2.wepayu.exception.NaoComandoDesfazerException;
-import br.ufal.ic.p2.wepayu.exception.NaoComandoRefazerException;
-import br.ufal.ic.p2.wepayu.exception.OperacaoHistoricoNaoExisteException;
-import br.ufal.ic.p2.wepayu.models.SistemaFolha;
+import br.ufal.ic.p2.wepayu.exception.empregados.*;
+import br.ufal.ic.p2.wepayu.exception.folha.*;
+import br.ufal.ic.p2.wepayu.exception.pagamento.*;
+import br.ufal.ic.p2.wepayu.exception.sindicato.*;
+import br.ufal.ic.p2.wepayu.exception.sistema.*;
+import br.ufal.ic.p2.wepayu.sistema.SistemaFolha;
 
+import java.io.IOException;
 import java.util.Stack;
 
 public class Facade{
@@ -14,99 +16,49 @@ public class Facade{
     private final Stack<SistemaFolha> estadosRefazer = new Stack<>();
     private boolean sistemaEncerrado;
 
-    private enum Operacao{
-        ZERAR_SISTEMA,
-        CRIAR_EMPREGADO,
-        CRIAR_COMISSIONADO,
-        ALTERAR_EMPREGADO,
-        ALTERAR_TIPO_EMPREGADO,
-        ALTERAR_SINDICALIZACAO,
-        ALTERAR_PAGAMENTO_BANCO,
-        REMOVER_EMPREGADO,
-        LANCAR_CARTAO,
-        LANCAR_VENDA,
-        LANCAR_TAXA_SERVICO,
-        RODAR_FOLHA
+    private SistemaFolha guardarEstado(){
+        return sistema.copiar();
     }
 
-    private String executarComHistorico(Operacao operacao, String... parametros) throws Exception{
-        SistemaFolha estadoAnterior = sistema.copiar();
-        try{
-            String resultado = executarOperacao(operacao, parametros);
-            estadosDesfazer.push(estadoAnterior);
-            estadosRefazer.clear();
-            return resultado;
-        }
-        catch(Exception e){
-            sistema = estadoAnterior;
-            throw e;
-        }
+    private void confirmarComando(SistemaFolha estadoAnterior){
+        estadosDesfazer.push(estadoAnterior);
+        estadosRefazer.clear();
     }
 
-    private String executarOperacao(Operacao operacao, String[] parametros)
-            throws Exception, OperacaoHistoricoNaoExisteException{
-        switch(operacao){
-            case ZERAR_SISTEMA:
-                sistema = new SistemaFolha();
-                sistemaEncerrado = false;
-                break;
-            case CRIAR_EMPREGADO:
-                return sistema.adicionarEmpregado(parametros[0], parametros[1], parametros[2], parametros[3]);
-            case CRIAR_COMISSIONADO:
-                return sistema.adicionarEmpregado(
-                        parametros[0], parametros[1], parametros[2], parametros[3], parametros[4]);
-            case ALTERAR_EMPREGADO:
-                sistema.alteraEmpregado(parametros[0], parametros[1], parametros[2]);
-                break;
-            case ALTERAR_TIPO_EMPREGADO:
-                sistema.alteraEmpregado(parametros[0], parametros[1], parametros[2], parametros[3]);
-                break;
-            case ALTERAR_SINDICALIZACAO:
-                sistema.alteraEmpregado(parametros[0], parametros[1], parametros[2], parametros[3], parametros[4]);
-                break;
-            case ALTERAR_PAGAMENTO_BANCO:
-                sistema.alteraEmpregado(parametros[0], parametros[1], parametros[2],
-                        parametros[3], parametros[4], parametros[5]);
-                break;
-            case REMOVER_EMPREGADO:
-                sistema.removerEmpregado(parametros[0]);
-                break;
-            case LANCAR_CARTAO:
-                sistema.lancaCartao(parametros[0], parametros[1], parametros[2]);
-                break;
-            case LANCAR_VENDA:
-                sistema.lancaVenda(parametros[0], parametros[1], parametros[2]);
-                break;
-            case LANCAR_TAXA_SERVICO:
-                sistema.lancaTaxaServico(parametros[0], parametros[1], parametros[2]);
-                break;
-            case RODAR_FOLHA:
-                sistema.rodaFolha(parametros[0], parametros[1]);
-                break;
-            default:
-                throw new OperacaoHistoricoNaoExisteException();
-        }
-        return null;
+    public void zerarSistema(){
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema = new SistemaFolha();
+        sistemaEncerrado = false;
+        confirmarComando(estadoAnterior);
     }
 
-    public void zerarSistema() throws Exception{
-        executarComHistorico(Operacao.ZERAR_SISTEMA);
-    }
-
-    public String criarEmpregado(String nome, String endereco, String tipo, String salario) throws Exception{
-        return executarComHistorico(Operacao.CRIAR_EMPREGADO, nome, endereco, tipo, salario);
+    public String criarEmpregado(String nome, String endereco, String tipo, String salario)
+            throws NomeNuloException, EnderecoNuloException, SalarioNuloException,
+            SalarioNaoNegativoException, SalarioNaoNumericoException, TipoNaoAplicavelException, TipoInvalidoException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        String id = sistema.adicionarEmpregado(nome, endereco, tipo, salario);
+        confirmarComando(estadoAnterior);
+        return id;
     }
 
     public String criarEmpregado(String nome, String endereco, String tipo, String salario, String comissao)
-            throws Exception{
-        return executarComHistorico(Operacao.CRIAR_COMISSIONADO, nome, endereco, tipo, salario, comissao);
+            throws NomeNuloException, EnderecoNuloException, SalarioNuloException, SalarioNaoNegativoException,
+            SalarioNaoNumericoException, ComissaoNulaException, ComissaoNaoNumericaException,
+            ComissaoNaoNegativaException, TipoNaoAplicavelException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        String id = sistema.adicionarEmpregado(nome, endereco, tipo, salario, comissao);
+        confirmarComando(estadoAnterior);
+        return id;
     }
 
-    public String getAtributoEmpregado(String emp, String atributo) throws Exception{
+    public String getAtributoEmpregado(String emp, String atributo)
+            throws IdentificacaoNulaException, EmpregadoNaoExisteException, EmpregadoNaoComissionadoException,
+            EmpregadoNaoSindicalizadoException, EmpregadoNaoRecebeEmBancoException, AtributoNaoExisteException{
         return sistema.getAtributoEmpregado(emp, atributo);
     }
 
-    public String getEmpregadoPorNome(String nome, int indice) throws Exception{
+    public String getEmpregadoPorNome(String nome, int indice)
+            throws NomeNuloException, NomeEmpregadoNaoExisteException{
         return sistema.getEmpregadoPorNome(nome, indice);
     }
 
@@ -114,62 +66,107 @@ public class Facade{
         return sistema.getNumeroDeEmpregados();
     }
 
-    public void alteraEmpregado(String id, String atributo, String valor) throws Exception{
-        executarComHistorico(Operacao.ALTERAR_EMPREGADO, id, atributo, valor);
+    public void alteraEmpregado(String id, String atributo, String valor)
+            throws IdentificacaoNulaException, EmpregadoNaoExisteException, NomeNuloException,
+            EnderecoNuloException, SalarioNuloException, SalarioNaoNegativoException, SalarioNaoNumericoException,
+            ComissaoNulaException, ComissaoNaoNegativaException, ComissaoNaoNumericaException,
+            EmpregadoNaoComissionadoException, MetodoPagamentoInvalidoException, ValorBooleanoInvalidoException,
+            TipoInvalidoException, AtributoNaoExisteException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.alteraEmpregado(id, atributo, valor);
+        confirmarComando(estadoAnterior);
     }
 
-    public void alteraEmpregado(String id, String atributo, String valor, String comissao) throws Exception{
-        executarComHistorico(Operacao.ALTERAR_TIPO_EMPREGADO, id, atributo, valor, comissao);
+    public void alteraEmpregado(String id, String atributo, String valor, String comissao)
+            throws IdentificacaoNulaException, EmpregadoNaoExisteException, SalarioNuloException,
+            SalarioNaoNegativoException, SalarioNaoNumericoException, ComissaoNulaException,
+            ComissaoNaoNegativaException, ComissaoNaoNumericaException, EmpregadoNaoComissionadoException,
+            TipoInvalidoException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.alteraEmpregado(id, atributo, valor, comissao);
+        confirmarComando(estadoAnterior);
     }
 
     public void alteraEmpregado(String id, String atributo, String valor, String idSindicato, String taxaSindical)
-            throws Exception{
-        executarComHistorico(Operacao.ALTERAR_SINDICALIZACAO, id, atributo, valor, idSindicato, taxaSindical);
+            throws IdentificacaoNulaException, EmpregadoNaoExisteException, IdentificacaoSindicatoNulaException,
+            TaxaSindicalNulaException, TaxaSindicalNaoNumericaException, TaxaSindicalNaoNegativaException,
+            MesmaIdentificacaoException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.alteraEmpregado(id, atributo, valor, idSindicato, taxaSindical);
+        confirmarComando(estadoAnterior);
     }
 
     public void alteraEmpregado(String id, String atributo, String valor, String banco, String agencia,
-                                String contaCorrente) throws Exception{
-        executarComHistorico(Operacao.ALTERAR_PAGAMENTO_BANCO, id, atributo, valor, banco, agencia, contaCorrente);
+                                String contaCorrente)
+            throws IdentificacaoNulaException, EmpregadoNaoExisteException, BancoNuloException,
+            AgenciaNulaException, ContaCorrenteNulaException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.alteraEmpregado(id, atributo, valor, banco, agencia, contaCorrente);
+        confirmarComando(estadoAnterior);
     }
 
-    public void removerEmpregado(String id) throws Exception{
-        executarComHistorico(Operacao.REMOVER_EMPREGADO, id);
+    public void removerEmpregado(String id) throws IdentificacaoNulaException, EmpregadoNaoExisteException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.removerEmpregado(id);
+        confirmarComando(estadoAnterior);
     }
 
-    public String getHorasNormaisTrabalhadas(String id, String dataInicial, String dataFinal) throws Exception{
+    public String getHorasNormaisTrabalhadas(String id, String dataInicial, String dataFinal)
+            throws IdentificacaoNulaException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosDataFinalException, EmpregadoNaoExisteException, EmpregadoNaoHoristaException{
         return sistema.getHorasNormaisTrabalhadas(id, dataInicial, dataFinal);
     }
 
-    public String getHorasExtrasTrabalhadas(String id, String dataInicial, String dataFinal) throws Exception{
+    public String getHorasExtrasTrabalhadas(String id, String dataInicial, String dataFinal)
+            throws IdentificacaoNulaException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosDataFinalException, EmpregadoNaoExisteException, EmpregadoNaoHoristaException{
         return sistema.getHorasExtrasTrabalhadas(id, dataInicial, dataFinal);
     }
 
-    public void lancaCartao(String id, String data, String horas) throws Exception{
-        executarComHistorico(Operacao.LANCAR_CARTAO, id, data, horas);
+    public void lancaCartao(String id, String data, String horas)
+            throws IdentificacaoNulaException, DataInvalidaException, HoraNaoPositivaException,
+            EmpregadoNaoExisteException, EmpregadoNaoHoristaException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.lancaCartao(id, data, horas);
+        confirmarComando(estadoAnterior);
     }
 
-    public void lancaVenda(String id, String data, String valorVenda) throws Exception{
-        executarComHistorico(Operacao.LANCAR_VENDA, id, data, valorVenda);
+    public void lancaVenda(String id, String data, String valorVenda)
+            throws IdentificacaoNulaException, DataInvalidaException, ValorNaoPositivoException,
+            EmpregadoNaoExisteException, EmpregadoNaoComissionadoException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.lancaVenda(id, data, valorVenda);
+        confirmarComando(estadoAnterior);
     }
 
-    public String getVendasRealizadas(String id, String dataInicial, String dataFinal) throws Exception{
+    public String getVendasRealizadas(String id, String dataInicial, String dataFinal)
+            throws IdentificacaoNulaException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosDataFinalException, EmpregadoNaoExisteException, EmpregadoNaoComissionadoException{
         return sistema.getVendasRealizadas(id, dataInicial, dataFinal);
     }
 
-    public void lancaTaxaServico(String idMembro, String data, String taxaServico) throws Exception{
-        executarComHistorico(Operacao.LANCAR_TAXA_SERVICO, idMembro, data, taxaServico);
+    public void lancaTaxaServico(String idMembro, String data, String taxaServico)
+            throws IdentificacaoMembroNulaException, DataInvalidaException, ValorNaoPositivoException,
+            MembroSindicatoNaoExisteException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.lancaTaxaServico(idMembro, data, taxaServico);
+        confirmarComando(estadoAnterior);
     }
 
-    public String getTaxasServico(String id, String dataInicial, String dataFinal) throws Exception{
+    public String getTaxasServico(String id, String dataInicial, String dataFinal)
+            throws IdentificacaoNulaException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosDataFinalException, EmpregadoNaoExisteException, EmpregadoNaoSindicalizadoException{
         return sistema.getTaxasServico(id, dataInicial, dataFinal);
     }
 
-    public String totalFolha(String data) throws Exception{
+    public String totalFolha(String data) throws DataInvalidaException{
         return sistema.totalFolha(data);
     }
 
-    public void rodaFolha(String data, String saida) throws Exception{
-        executarComHistorico(Operacao.RODAR_FOLHA, data, saida);
+    public void rodaFolha(String data, String saida) throws DataInvalidaException, IOException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.rodaFolha(data, saida);
+        confirmarComando(estadoAnterior);
     }
 
     public void undo() throws NaoComandoDesfazerException, ComandoAposEncerrarException{

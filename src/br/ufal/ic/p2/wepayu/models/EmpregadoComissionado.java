@@ -33,12 +33,17 @@ public class EmpregadoComissionado extends Empregado{
         return this.comissao;
     }
 
+    @Override
+    public double getComissaoFolha(){
+        return comissao;
+    }
+
     public void adicionarResultadoVenda(ResultadoVenda venda){
         resultadoVendaList.add(venda);
     }
 
     public List<ResultadoVenda> getResultadoVendaList(){
-        return resultadoVendaList;
+        return new ArrayList<>(resultadoVendaList);
     }
 
     @Override
