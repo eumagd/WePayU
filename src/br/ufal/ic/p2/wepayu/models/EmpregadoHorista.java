@@ -22,7 +22,7 @@ public class EmpregadoHorista extends Empregado{
 
     @Override
     public boolean verificaDiaPagamento(String dataAtual) {
-        return ehSexta(dataAtual);
+        return obterAgendaPagamento().devePagar(dataAtual);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class EmpregadoHorista extends Empregado{
 
     @Override
     protected  double calcularSalarioBruto(String dataAtual){
-        LocalDate inicio = converteParaLocalDate(getPagamentoAnterior(dataAtual));
+        LocalDate inicio = converteParaLocalDate(getInicioPeriodoPagamento(dataAtual));
         LocalDate fim = converteParaLocalDate(dataAtual);
         double totalSalario = 0;
 
@@ -61,7 +61,7 @@ public class EmpregadoHorista extends Empregado{
 
     @Override
     public int getHorasNormaisPagas(String dataAtual){
-        LocalDate inicio = converteParaLocalDate(getPagamentoAnterior(dataAtual));
+        LocalDate inicio = converteParaLocalDate(getInicioPeriodoPagamento(dataAtual));
         LocalDate fim = converteParaLocalDate(dataAtual);
         int normais = 0;
         for (CartaoPonto cartao : cartaoPontoList) {
@@ -76,7 +76,7 @@ public class EmpregadoHorista extends Empregado{
 
     @Override
     public int getHorasExtrasPagas(String dataAtual){
-        LocalDate inicio = converteParaLocalDate(getPagamentoAnterior(dataAtual));
+        LocalDate inicio = converteParaLocalDate(getInicioPeriodoPagamento(dataAtual));
         LocalDate fim = converteParaLocalDate(dataAtual);
         int extras = 0;
         for(CartaoPonto cartao : cartaoPontoList) {

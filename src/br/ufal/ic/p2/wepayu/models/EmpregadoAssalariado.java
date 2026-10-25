@@ -17,11 +17,11 @@ public class EmpregadoAssalariado extends Empregado {
 
     @Override
     public boolean verificaDiaPagamento(String dataAtual) {
-        return ehUltimoDiaUtil(dataAtual);
+        return obterAgendaPagamento().devePagar(dataAtual);
     }
 
     @Override
     protected double calcularSalarioBruto(String dataAtual){
-        return getSalario();
+        return obterAgendaPagamento().calcularSalarioSemanalizado(getSalario());
     }
 }

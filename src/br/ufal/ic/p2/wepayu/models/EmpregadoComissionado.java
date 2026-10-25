@@ -48,9 +48,7 @@ public class EmpregadoComissionado extends Empregado{
 
     @Override
     public boolean verificaDiaPagamento(String dataAtual){
-        if (!ehSexta(dataAtual)) return false;
-        long dias = diasEntre(getPagamentoAnterior(dataAtual), dataAtual);
-        return dias > 0 && (dias % 14 == 0);
+        return obterAgendaPagamento().devePagar(dataAtual);
     }
 
     @Override
@@ -61,7 +59,7 @@ public class EmpregadoComissionado extends Empregado{
 
     @Override
     public double getVendasPagas(String dataAtual) {
-        LocalDate inicio = converteParaLocalDate(getPagamentoAnterior(dataAtual));
+        LocalDate inicio = converteParaLocalDate(getInicioPeriodoPagamento(dataAtual));
         LocalDate fim = converteParaLocalDate(dataAtual);
         double total = 0;
 
@@ -76,7 +74,6 @@ public class EmpregadoComissionado extends Empregado{
 
     @Override
     public double getSalarioFixoPago(String dataAtual) {
-        double valor = (getSalario() * 12) / 26;
-        return Math.floor(valor * 100.0) / 100.0;
+        return obterAgendaPagamento().calcularSalarioSemanalizado(getSalario());
     }
 }

@@ -1,17 +1,18 @@
 package br.ufal.ic.p2.wepayu;
 
+import br.ufal.ic.p2.wepayu.exception.agenda.AgendaNaoDisponivelException;
 import br.ufal.ic.p2.wepayu.exception.empregados.*;
 import br.ufal.ic.p2.wepayu.exception.folha.*;
 import br.ufal.ic.p2.wepayu.exception.pagamento.*;
 import br.ufal.ic.p2.wepayu.exception.sindicato.*;
 import br.ufal.ic.p2.wepayu.exception.sistema.*;
+import br.ufal.ic.p2.wepayu.sistema.PersistenciaSistema;
 import br.ufal.ic.p2.wepayu.sistema.SistemaFolha;
-
 import java.io.IOException;
 import java.util.Stack;
 
 public class Facade{
-    private static SistemaFolha sistema = new SistemaFolha();
+    private static SistemaFolha sistema = PersistenciaSistema.carregar();
     private final Stack<SistemaFolha> estadosDesfazer = new Stack<>();
     private final Stack<SistemaFolha> estadosRefazer = new Stack<>();
     private boolean sistemaEncerrado;
@@ -21,6 +22,13 @@ public class Facade{
     }
 
     private void confirmarComando(SistemaFolha estadoAnterior){
+        try{
+            PersistenciaSistema.salvar(sistema);
+        }
+        catch(FalhaAoSalvarDadosException e){
+            sistema = estadoAnterior;
+            throw e;
+        }
         estadosDesfazer.push(estadoAnterior);
         estadosRefazer.clear();
     }
@@ -28,8 +36,8 @@ public class Facade{
     public void zerarSistema(){
         SistemaFolha estadoAnterior = guardarEstado();
         sistema = new SistemaFolha();
-        sistemaEncerrado = false;
         confirmarComando(estadoAnterior);
+        sistemaEncerrado = false;
     }
 
     public String criarEmpregado(String nome, String endereco, String tipo, String salario)
@@ -71,7 +79,7 @@ public class Facade{
             EnderecoNuloException, SalarioNuloException, SalarioNaoNegativoException, SalarioNaoNumericoException,
             ComissaoNulaException, ComissaoNaoNegativaException, ComissaoNaoNumericaException,
             EmpregadoNaoComissionadoException, MetodoPagamentoInvalidoException, ValorBooleanoInvalidoException,
-            TipoInvalidoException, AtributoNaoExisteException{
+            TipoInvalidoException, AtributoNaoExisteException, AgendaNaoDisponivelException{
         SistemaFolha estadoAnterior = guardarEstado();
         sistema.alteraEmpregado(id, atributo, valor);
         confirmarComando(estadoAnterior);
@@ -176,19 +184,38 @@ public class Facade{
         if(estadosDesfazer.isEmpty()){
             throw new NaoComandoDesfazerException();
         }
-        estadosRefazer.push(sistema.copiar());
-        sistema = estadosDesfazer.pop();
+        SistemaFolha estadoAtual = sistema;
+        sistema = estadosDesfazer.peek();
+        try{
+            PersistenciaSistema.salvar(sistema);
+        }
+        catch(FalhaAoSalvarDadosException e){
+            sistema = estadoAtual;
+            throw e;
+        }
+        estadosRefazer.push(estadoAtual);
+        estadosDesfazer.pop();
     }
 
     public void redo() throws NaoComandoRefazerException{
         if(estadosRefazer.isEmpty()){
             throw new NaoComandoRefazerException();
         }
-        estadosDesfazer.push(sistema.copiar());
-        sistema = estadosRefazer.pop();
+        SistemaFolha estadoAtual = sistema;
+        sistema = estadosRefazer.peek();
+        try{
+            PersistenciaSistema.salvar(sistema);
+        }
+        catch(FalhaAoSalvarDadosException e){
+            sistema = estadoAtual;
+            throw e;
+        }
+        estadosDesfazer.push(estadoAtual);
+        estadosRefazer.pop();
     }
 
     public void encerrarSistema(){
+        PersistenciaSistema.salvar(sistema);
         sistemaEncerrado = true;
     }
 }

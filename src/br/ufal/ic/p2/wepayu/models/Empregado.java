@@ -1,5 +1,6 @@
 package br.ufal.ic.p2.wepayu.models;
 
+import br.ufal.ic.p2.wepayu.exception.agenda.AgendaNaoDisponivelException;
 import br.ufal.ic.p2.wepayu.exception.empregados.*;
 import br.ufal.ic.p2.wepayu.exception.folha.*;
 import br.ufal.ic.p2.wepayu.exception.pagamento.*;
@@ -14,6 +15,7 @@ public abstract class Empregado {
     private String tipo;
     private double salario;
     private MembroSindicato filiacao;
+    private AgendaPagamento agendaPagamento;
     private MetodoPagamento metodoPagamento = new EmMaos();
     protected String dataUltimoPagamento = "31/12/2004";
     private double descontosPendentes;
@@ -23,6 +25,7 @@ public abstract class Empregado {
         this.endereco = endereco;
         this.tipo = tipo;
         this.salario = salario;
+        this.agendaPagamento = AgendaPagamento.padraoPara(tipo);
     }
 
     public int getHorasNormaisPagas(String dataAtual) { return 0; }
@@ -54,6 +57,7 @@ public abstract class Empregado {
         copia.setEndereco(endereco);
         copia.setTipo(tipo);
         copia.setSalario(salario);
+        copia.agendaPagamento = agendaPagamento.copiar();
         copia.setMetodoPagamento(metodoPagamento.copiar());
         copia.atualizarProximoPagamento(dataUltimoPagamento, descontosPendentes);
         if(filiacao != null){
@@ -84,6 +88,22 @@ public abstract class Empregado {
 
     public double getSalario() {
         return salario;
+    }
+
+    public String getAgendaPagamento(){
+        return agendaPagamento.getFormula();
+    }
+
+    public void setAgendaPagamento(String formula) throws AgendaNaoDisponivelException{
+        agendaPagamento = AgendaPagamento.selecionar(formula);
+    }
+
+    protected AgendaPagamento obterAgendaPagamento(){
+        return agendaPagamento;
+    }
+
+    void copiarAgendaPagamentoDe(Empregado empregado){
+        agendaPagamento = empregado.agendaPagamento.copiar();
     }
 
     public void setId(String id){
@@ -186,7 +206,16 @@ public abstract class Empregado {
     }
 
     public String getPagamentoAnterior(String dataAtual) {
-        return this.dataUltimoPagamento;
+        return dataUltimoPagamento;
+    }
+
+    public String getInicioPeriodoPagamento(String dataAtual){
+        LocalDate ultimoPagamento = converteParaLocalDate(dataUltimoPagamento);
+        LocalDate inicioPeriodo = converteParaLocalDate(agendaPagamento.getInicioPeriodo(dataAtual));
+        if(ultimoPagamento.isAfter(inicioPeriodo)){
+            return dataUltimoPagamento;
+        }
+        return agendaPagamento.getInicioPeriodo(dataAtual);
     }
 
     public void atualizarProximoPagamento(String dataAtual, double descontosPendentes){
@@ -211,7 +240,7 @@ public abstract class Empregado {
 
         long dias = fim.toEpochDay() - inicio.toEpochDay();
 
-        if(ehEmpregadoAssalariado() && dias < 28){
+        if(ehEmpregadoAssalariado() && "mensal".equals(agendaPagamento.getTipo()) && dias < 28){
             dias = 28;
         }
 
