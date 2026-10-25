@@ -1,24 +1,29 @@
 package br.ufal.ic.p2.wepayu.sistema;
 
-import br.ufal.ic.p2.wepayu.exception.agenda.AgendaNaoDisponivelException;
+import br.ufal.ic.p2.wepayu.exception.agenda.*;
 import br.ufal.ic.p2.wepayu.exception.empregados.*;
 import br.ufal.ic.p2.wepayu.exception.folha.*;
 import br.ufal.ic.p2.wepayu.exception.pagamento.*;
 import br.ufal.ic.p2.wepayu.exception.sindicato.*;
-import br.ufal.ic.p2.wepayu.models.*;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import br.ufal.ic.p2.wepayu.models.agenda.*;
+import br.ufal.ic.p2.wepayu.models.empregados.*;
+import br.ufal.ic.p2.wepayu.models.pagamento.*;
+import br.ufal.ic.p2.wepayu.models.sindicato.*;
+import br.ufal.ic.p2.wepayu.models.util.*;
+import java.io.*;
+import java.util.*;
 
 public class SistemaFolha {
     private final ArrayList<Empregado> empregados = new ArrayList<>();
+    private final ArrayList<AgendaPagamento> agendas = new ArrayList<>(AgendaPagamento.agendasPadrao());
     private int contId = 1;
 
-    public static SistemaFolha restaurar(List<Empregado> empregados, int proximoId){
+    public static SistemaFolha restaurar(List<Empregado> empregados, int proximoId, List<AgendaPagamento> agendas){
         SistemaFolha sistema = new SistemaFolha();
+        sistema.agendas.clear();
+        for(AgendaPagamento agenda : agendas){
+            sistema.agendas.add(agenda.copiar());
+        }
         for(Empregado empregado : empregados){
             sistema.empregados.add(empregado.copiar());
         }
@@ -30,6 +35,10 @@ public class SistemaFolha {
         SistemaFolha copia = new SistemaFolha();
         copia.contId = contId;
 
+        copia.agendas.clear();
+        for(AgendaPagamento agenda : agendas){
+            copia.agendas.add(agenda.copiar());
+        }
         for(Empregado empregado : empregados){
             copia.empregados.add(empregado.copiar());
         }
@@ -47,6 +56,25 @@ public class SistemaFolha {
 
     public int getProximoId(){
         return contId;
+    }
+
+    public List<AgendaPagamento> agendasParaPersistencia(){
+        List<AgendaPagamento> copia = new ArrayList<>();
+        for(AgendaPagamento agenda : agendas){
+            copia.add(agenda.copiar());
+        }
+        return copia;
+    }
+
+    public void criarAgendaDePagamentos(String descricao)
+            throws AgendaDescricaoInvalidaException, AgendaJaExisteException{
+        AgendaPagamento novaAgenda = AgendaPagamento.criar(descricao);
+        for(AgendaPagamento agenda : agendas){
+            if(agenda.mesmaAgenda(novaAgenda)){
+                throw new AgendaJaExisteException();
+            }
+        }
+        agendas.add(novaAgenda);
     }
 
     //métodos privados
@@ -244,7 +272,7 @@ public class SistemaFolha {
                 emp.setComissao(FabricaEmpregado.converterComissao(valor));
                 break;
             case "agendaPagamento":
-                emp.setAgendaPagamento(valor);
+                emp.setAgendaPagamento(AgendaPagamento.selecionar(valor, agendas));
                 break;
             case "metodoPagamento":
                 if(valor.equals("emMaos")){

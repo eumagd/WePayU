@@ -1,4 +1,4 @@
-package br.ufal.ic.p2.wepayu.models;
+package br.ufal.ic.p2.wepayu.models.util;
 
 public class Formatador {
     public static String formatarHoras(double horas){

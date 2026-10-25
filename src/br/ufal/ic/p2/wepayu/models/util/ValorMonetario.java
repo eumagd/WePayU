@@ -1,4 +1,4 @@
-package br.ufal.ic.p2.wepayu.models;
+package br.ufal.ic.p2.wepayu.models.util;
 
 import br.ufal.ic.p2.wepayu.exception.folha.ValorNaoPositivoException;
 

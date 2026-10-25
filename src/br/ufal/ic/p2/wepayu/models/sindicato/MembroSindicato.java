@@ -1,9 +1,9 @@
-package br.ufal.ic.p2.wepayu.models;
+package br.ufal.ic.p2.wepayu.models.sindicato;
 
+import br.ufal.ic.p2.wepayu.models.empregados.Empregado;
 import br.ufal.ic.p2.wepayu.exception.sindicato.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class MembroSindicato {
     private String idMembro;

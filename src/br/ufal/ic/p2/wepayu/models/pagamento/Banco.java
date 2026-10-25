@@ -1,8 +1,6 @@
-package br.ufal.ic.p2.wepayu.models;
+package br.ufal.ic.p2.wepayu.models.pagamento;
 
-import br.ufal.ic.p2.wepayu.exception.pagamento.AgenciaNulaException;
-import br.ufal.ic.p2.wepayu.exception.pagamento.BancoNuloException;
-import br.ufal.ic.p2.wepayu.exception.pagamento.ContaCorrenteNulaException;
+import br.ufal.ic.p2.wepayu.exception.pagamento.*;
 
 public class Banco extends MetodoPagamento{
     private String banco;

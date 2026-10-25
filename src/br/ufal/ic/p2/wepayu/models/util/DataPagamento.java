@@ -1,9 +1,6 @@
-package br.ufal.ic.p2.wepayu.models;
+package br.ufal.ic.p2.wepayu.models.util;
 
-import br.ufal.ic.p2.wepayu.exception.folha.DataFinalInvalidaException;
-import br.ufal.ic.p2.wepayu.exception.folha.DataInicialInvalidaException;
-import br.ufal.ic.p2.wepayu.exception.folha.DataInvalidaException;
-import br.ufal.ic.p2.wepayu.exception.folha.DataInicialPosDataFinalException;
+import br.ufal.ic.p2.wepayu.exception.folha.*;
 
 public class DataPagamento {
     public static void validar(String data) throws DataInvalidaException{

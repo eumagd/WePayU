@@ -4,7 +4,7 @@ Projeto da disciplina: sistema de informação para administrar o pagamento de e
 
 ## Status
 
-Em desenvolvimento — código sendo implementado.
+Concluído.
 
 ## Ambiente utilizado
 
@@ -36,8 +36,8 @@ A folha é rodada diariamente, pagando os empregados cujo salário vence naquele
 - [X] US8 — Undo/redo
 
 ## Milestone 2 — User Stories 9 a 10 (06/09 - 25/09)
-- [ ] US9 - Agenda de pagamento
-- [ ] US10 - Criação de novas agendas de pagamento
+- [X] US9 - Agenda de pagamento
+- [X] US10 - Criação de novas agendas de pagamento
 
 ## Arquitetura
 

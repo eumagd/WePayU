@@ -1,4 +1,4 @@
-package br.ufal.ic.p2.wepayu.models;
+package br.ufal.ic.p2.wepayu.models.empregados;
 
 public class EmpregadoAssalariado extends Empregado {
     public EmpregadoAssalariado(String nome, String endereco, String tipo, double salario){

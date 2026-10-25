@@ -1,8 +1,9 @@
-package br.ufal.ic.p2.wepayu.models;
+package br.ufal.ic.p2.wepayu.models.empregados;
+
+import br.ufal.ic.p2.wepayu.models.util.DataPagamento;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class EmpregadoComissionado extends Empregado{
     private double comissao;

@@ -1,12 +1,14 @@
 package br.ufal.ic.p2.wepayu.sistema;
 
-import br.ufal.ic.p2.wepayu.exception.agenda.AgendaNaoDisponivelException;
-import br.ufal.ic.p2.wepayu.exception.empregados.EmpregadoNaoComissionadoException;
-import br.ufal.ic.p2.wepayu.exception.empregados.EmpregadoNaoHoristaException;
+import br.ufal.ic.p2.wepayu.exception.agenda.*;
+import br.ufal.ic.p2.wepayu.exception.empregados.*;
 import br.ufal.ic.p2.wepayu.exception.pagamento.EmpregadoNaoRecebeEmBancoException;
-import br.ufal.ic.p2.wepayu.exception.sistema.FalhaAoCarregarDadosException;
-import br.ufal.ic.p2.wepayu.exception.sistema.FalhaAoSalvarDadosException;
-import br.ufal.ic.p2.wepayu.models.*;
+import br.ufal.ic.p2.wepayu.exception.sistema.*;
+import br.ufal.ic.p2.wepayu.models.agenda.*;
+import br.ufal.ic.p2.wepayu.models.empregados.*;
+import br.ufal.ic.p2.wepayu.models.pagamento.*;
+import br.ufal.ic.p2.wepayu.models.sindicato.*;
+import br.ufal.ic.p2.wepayu.models.util.*;
 import org.w3c.dom.*;
 
 import javax.xml.XMLConstants;
@@ -34,17 +36,18 @@ public class PersistenciaSistema {
             Document documento = builder.parse(ARQUIVO.toFile());
             Element raiz = documento.getDocumentElement();
             int proximoId = Integer.parseInt(raiz.getAttribute("proximoId"));
+            List<AgendaPagamento> agendas = carregarAgendas(raiz);
             List<Empregado> empregados = new ArrayList<>();
             NodeList elementos = raiz.getElementsByTagName("empregado");
 
             for(int i = 0; i < elementos.getLength(); i++){
-                empregados.add(carregarEmpregado((Element) elementos.item(i)));
+                empregados.add(carregarEmpregado((Element) elementos.item(i), agendas));
             }
 
-            return SistemaFolha.restaurar(empregados, proximoId);
+            return SistemaFolha.restaurar(empregados, proximoId, agendas);
         }
         catch(ParserConfigurationException | org.xml.sax.SAXException | IOException
-              | IllegalArgumentException | AgendaNaoDisponivelException
+              | IllegalArgumentException | AgendaNaoDisponivelException | AgendaDescricaoInvalidaException
               | EmpregadoNaoHoristaException | EmpregadoNaoComissionadoException e){
             throw new FalhaAoCarregarDadosException(e);
         }
@@ -58,6 +61,14 @@ public class PersistenciaSistema {
             Element raiz = documento.createElement("sistema");
             raiz.setAttribute("proximoId", String.valueOf(sistema.getProximoId()));
             documento.appendChild(raiz);
+
+            Element agendas = documento.createElement("agendas");
+            raiz.appendChild(agendas);
+            for(AgendaPagamento agenda : sistema.agendasParaPersistencia()){
+                Element item = documento.createElement("agenda");
+                item.setAttribute("formula", agenda.getFormula());
+                agendas.appendChild(item);
+            }
 
             for(Empregado empregado : sistema.empregadosParaPersistencia()){
                 salvarEmpregado(documento, raiz, empregado);
@@ -159,7 +170,28 @@ public class PersistenciaSistema {
         }
     }
 
-    private static Empregado carregarEmpregado(Element elemento)
+    private static List<AgendaPagamento> carregarAgendas(Element raiz)
+            throws AgendaDescricaoInvalidaException{
+        if(!temFilho(raiz, "agendas")){
+            return AgendaPagamento.agendasPadrao();
+        }
+
+        List<AgendaPagamento> agendas = new ArrayList<>();
+        NodeList elementos = filho(raiz, "agendas").getElementsByTagName("agenda");
+        for(int i = 0; i < elementos.getLength(); i++){
+            Element elemento = (Element) elementos.item(i);
+            AgendaPagamento agenda = AgendaPagamento.criar(elemento.getAttribute("formula"));
+            for(AgendaPagamento cadastrada : agendas){
+                if(cadastrada.mesmaAgenda(agenda)){
+                    throw new FalhaAoCarregarDadosException("agenda duplicada no arquivo XML.");
+                }
+            }
+            agendas.add(agenda);
+        }
+        return agendas.isEmpty() ? AgendaPagamento.agendasPadrao() : agendas;
+    }
+
+    private static Empregado carregarEmpregado(Element elemento, List<AgendaPagamento> agendas)
             throws AgendaNaoDisponivelException, EmpregadoNaoHoristaException,
             EmpregadoNaoComissionadoException{
         String tipo = texto(elemento, "tipo");
@@ -179,11 +211,14 @@ public class PersistenciaSistema {
                     numero(texto(elemento, "comissao")));
         }
         else{
-            throw new IllegalArgumentException("Tipo de empregado invalido no arquivo XML.");
+            throw new FalhaAoCarregarDadosException("tipo de empregado invalido no arquivo XML.");
         }
 
         empregado.setId(texto(elemento, "id"));
-        empregado.setAgendaPagamento(texto(elemento, "agendaPagamento"));
+        String formulaAgenda = temFilho(elemento, "agendaPagamento")
+                ? texto(elemento, "agendaPagamento")
+                : AgendaPagamento.padraoPara(tipo).getFormula();
+        empregado.setAgendaPagamento(AgendaPagamento.selecionar(formulaAgenda, agendas));
         empregado.atualizarProximoPagamento(texto(elemento, "dataUltimoPagamento"),
                 numero(texto(elemento, "descontosPendentes")));
 
@@ -197,7 +232,7 @@ public class PersistenciaSistema {
                     texto(pagamento, "agencia"), texto(pagamento, "contaCorrente")));
         }
         else if(!tipoPagamento.equals("emMaos")){
-            throw new IllegalArgumentException("Metodo de pagamento invalido no arquivo XML.");
+            throw new FalhaAoCarregarDadosException("metodo de pagamento invalido no arquivo XML.");
         }
 
         if(tipo.equals("horista")){
@@ -270,7 +305,7 @@ public class PersistenciaSistema {
                 return (Element) no;
             }
         }
-        throw new IllegalArgumentException("Elemento XML obrigatorio ausente: " + nome);
+        throw new FalhaAoCarregarDadosException("elemento XML obrigatorio ausente: " + nome);
     }
 
     private static boolean temFilho(Element pai, String nome){

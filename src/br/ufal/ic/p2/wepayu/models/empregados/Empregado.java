@@ -1,10 +1,12 @@
-package br.ufal.ic.p2.wepayu.models;
+package br.ufal.ic.p2.wepayu.models.empregados;
 
+import br.ufal.ic.p2.wepayu.models.agenda.AgendaPagamento;
+import br.ufal.ic.p2.wepayu.models.pagamento.EmMaos;
+import br.ufal.ic.p2.wepayu.models.pagamento.MetodoPagamento;
+import br.ufal.ic.p2.wepayu.models.sindicato.MembroSindicato;
+import br.ufal.ic.p2.wepayu.models.sindicato.TaxaServico;
 import br.ufal.ic.p2.wepayu.exception.agenda.AgendaNaoDisponivelException;
 import br.ufal.ic.p2.wepayu.exception.empregados.*;
-import br.ufal.ic.p2.wepayu.exception.folha.*;
-import br.ufal.ic.p2.wepayu.exception.pagamento.*;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -96,6 +98,10 @@ public abstract class Empregado {
 
     public void setAgendaPagamento(String formula) throws AgendaNaoDisponivelException{
         agendaPagamento = AgendaPagamento.selecionar(formula);
+    }
+
+    public void setAgendaPagamento(AgendaPagamento agenda){
+        agendaPagamento = agenda.copiar();
     }
 
     protected AgendaPagamento obterAgendaPagamento(){

@@ -1,7 +1,8 @@
-package br.ufal.ic.p2.wepayu.models;
+package br.ufal.ic.p2.wepayu.models.empregados;
 
-import br.ufal.ic.p2.wepayu.exception.folha.DataInvalidaException;
-import br.ufal.ic.p2.wepayu.exception.folha.HoraNaoPositivaException;
+import br.ufal.ic.p2.wepayu.models.util.DataPagamento;
+
+import br.ufal.ic.p2.wepayu.exception.folha.*;
 
 public class CartaoPonto {
     private String data;

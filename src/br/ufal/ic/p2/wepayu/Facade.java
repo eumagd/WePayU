@@ -1,15 +1,14 @@
 package br.ufal.ic.p2.wepayu;
 
-import br.ufal.ic.p2.wepayu.exception.agenda.AgendaNaoDisponivelException;
+import br.ufal.ic.p2.wepayu.exception.agenda.*;
 import br.ufal.ic.p2.wepayu.exception.empregados.*;
 import br.ufal.ic.p2.wepayu.exception.folha.*;
 import br.ufal.ic.p2.wepayu.exception.pagamento.*;
 import br.ufal.ic.p2.wepayu.exception.sindicato.*;
 import br.ufal.ic.p2.wepayu.exception.sistema.*;
-import br.ufal.ic.p2.wepayu.sistema.PersistenciaSistema;
-import br.ufal.ic.p2.wepayu.sistema.SistemaFolha;
+import br.ufal.ic.p2.wepayu.sistema.*;
 import java.io.IOException;
-import java.util.Stack;
+import java.util.*;
 
 public class Facade{
     private static SistemaFolha sistema = PersistenciaSistema.carregar();
@@ -72,6 +71,13 @@ public class Facade{
 
     public int getNumeroDeEmpregados(){
         return sistema.getNumeroDeEmpregados();
+    }
+
+    public void criarAgendaDePagamentos(String descricao)
+            throws AgendaDescricaoInvalidaException, AgendaJaExisteException{
+        SistemaFolha estadoAnterior = guardarEstado();
+        sistema.criarAgendaDePagamentos(descricao);
+        confirmarComando(estadoAnterior);
     }
 
     public void alteraEmpregado(String id, String atributo, String valor)
